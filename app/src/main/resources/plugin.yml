@@ -1,0 +1,7 @@
+name: Land-Paper-Plugin
+version: '1.0'
+main: io.hnewey.landplugin.LandPlugin
+description: Land Paper Plugin
+api-version: '26.2'
+bootstrapper: io.hnewey.landplugin.LandPluginBootstrap
+loader: io.hnewey.landplugin.LandPluginLoader
