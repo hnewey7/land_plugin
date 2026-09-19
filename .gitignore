@@ -6,3 +6,5 @@ build
 # IDE
 .vscode/
 .settings/
+
+app/bin

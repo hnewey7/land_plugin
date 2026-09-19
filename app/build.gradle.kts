@@ -28,6 +28,12 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+
+    // MockBukkit provides a fake server/world so Location, World etc. work in unit tests.
+    // Its version must match the Paper API version: 4.45.0 is the last build for 1.21.4.
+    // compileOnly isn't on the test classpath, so paper-api is needed here too.
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.45.0")
+    testImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
