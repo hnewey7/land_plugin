@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LandTest {
+public class LandTest {
     private ServerMock server;
     private WorldMock world;
 
