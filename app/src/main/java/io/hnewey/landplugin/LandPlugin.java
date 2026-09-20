@@ -8,19 +8,22 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class LandPlugin extends JavaPlugin implements Listener {
     private static LandPlugin instance;
+    private static LandManager land_manager;
 
     public static LandPlugin getInstance() { return instance; }
+    public static LandManager getLandManager() { return land_manager; }
+    public String getPrefix() { return getConfig().getString("prefix").replace("&", "§"); }
 
     @Override 
     public void onEnable() {
         instance = this;
+        land_manager = new LandManager(instance);
+
         Bukkit.getPluginManager().registerEvents(this, this);
-    }
 
-    @EventHandler 
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().sendMessage("Hello!");
+        LandCommands land_commands = new LandCommands(instance);
+        getCommand("land").setExecutor(land_commands);
     }
-
+    
     // Load land size from config and initialise LandManager with it.
 }

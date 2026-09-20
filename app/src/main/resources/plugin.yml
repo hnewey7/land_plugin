@@ -1,14 +1,14 @@
-name: Land-Paper-Plugin
+name: Land-Plugin
 version: '1.0'
 main: io.hnewey.landplugin.LandPlugin
-description: Land Paper Plugin
+description: Land Plugin
 api-version: '26.2'
 author: hnewey
 description: Land Plugin allows players to claim land through claim blocks which prevents other players from building on their land.
 
 commands:
   land:
-    description: Manages land plugin (e.g. getblock and remove)
+    description: Manages land plugin (e.g. getblock, add, remove, and delete)
     usage: /land <subcommand>
     permission: land.use
 
