@@ -7,16 +7,19 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
 public class LandCommands implements CommandExecutor, TabCompleter {
     private final LandPlugin plugin;
     private final LandManager land_manager;
+    private final LandBlockManager block_manager;
 
-    LandCommands(LandPlugin plugin, LandManager land_manager) {
+    LandCommands(LandPlugin plugin, LandManager land_manager, LandBlockManager block_manager) {
         this.plugin = plugin;
         this.land_manager = land_manager;
+        this.block_manager = block_manager;
     }
 
     @Override 
@@ -32,6 +35,10 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                 player.sendMessage("§a/land remove §2<player> §8- §7Untrust a player in your land.");
                 player.sendMessage("§a/land list §8- §7Show all your land.");
                 player.sendMessage("§a/land delete §8- §7Delete the land you are inside.");
+
+                if (player.hasPermission("land.block")) {
+                    player.sendMessage("§a/land block §8- §7Get a land block for claiming land.");
+                }
 
                 return true;
             }
@@ -144,6 +151,24 @@ public class LandCommands implements CommandExecutor, TabCompleter {
 
                     return true;
                 }
+                case "block": {
+                    if (player.hasPermission("land.block")) {
+                        ItemStack block = block_manager.getBlock();
+                        if (block == null) {
+                            player.sendMessage("§4Unable to generate land block.");
+                            return true;
+                        }
+
+                        ItemStack clone = block.clone();
+                        player.getInventory().addItem(clone);
+                        
+                        player.sendMessage("§aYou have received a land block.");
+                        return true;
+                    } else {
+                        player.sendMessage("§4You do not have permission for this command!");
+                        return true;
+                    }
+                }
             }
         } else {
             player.sendMessage("§4You do not have permission to use this command!");
@@ -156,6 +181,11 @@ public class LandCommands implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
             List<String> base = new ArrayList<>(Arrays.asList("add", "remove", "list", "delete"));
+
+            if (sender.hasPermission("land.block")) {
+                base.add("block");
+            }
+
             return base;
         }
 

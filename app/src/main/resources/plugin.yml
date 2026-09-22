@@ -16,3 +16,7 @@ permissions:
   land.use:
     description: Allows players to use the land plugin.
     default: true
+
+  land.block:
+    description: Allows player to get a land block.
+    default: op
