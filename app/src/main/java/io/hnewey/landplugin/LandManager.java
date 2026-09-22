@@ -8,9 +8,9 @@ import java.io.File;
 
 
 public class LandManager {
-    private static File land_folder;
+    private File land_folder;
 
-    private static Set<Land> land = new HashSet<Land>();
+    private Set<Land> land = new HashSet<Land>();
 
     LandManager(LandPlugin plugin) {
         land_folder = new File(plugin.getDataFolder(), "land");
@@ -25,17 +25,30 @@ public class LandManager {
         land.add(new Land(owner, centre));
     }
 
+    public void deleteLand(Land l) {
+        land.remove(l);
+    }
+
     public void deleteLand(UUID owner, Location centre) {
         // Get land by location
-        Land l = getLandByLocation(centre);
+        Land l = getLandByCentre(centre);
 
         if (l.isOwner(owner)) {
             land.remove(l);
         }
     }
 
-    public Land getLandByLocation(Location centre) {
+    public Land getLandByCentre(Location centre) {
         Optional<Land> potential = land.stream().filter(l -> l.getCentre().equals(centre)).findFirst();
+        if (potential.isPresent()) {
+            return potential.get();
+        } else {
+            return null;
+        }
+    }
+
+    public Land getLandByLocation(Location loc) {
+        Optional<Land> potential = land.stream().filter(l -> l.isInside(loc)).findFirst();
         if (potential.isPresent()) {
             return potential.get();
         } else {

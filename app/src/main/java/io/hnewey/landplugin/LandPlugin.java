@@ -21,9 +21,9 @@ public class LandPlugin extends JavaPlugin implements Listener {
 
         Bukkit.getPluginManager().registerEvents(this, this);
 
-        LandCommands land_commands = new LandCommands(instance);
+        LandCommands land_commands = new LandCommands(instance, land_manager);
         getCommand("land").setExecutor(land_commands);
     }
-    
+
     // Load land size from config and initialise LandManager with it.
 }

@@ -43,6 +43,11 @@ public class LandManagerTest {
         lm.createLand(player, loc);
 
         // Get land
+        Land land_by_centre = lm.getLandByCentre(loc);
+        assertNotNull(land_by_centre);
+        assert(land_by_centre.isOwner(player));
+        assert(land_by_centre.isInside(loc));
+
         Land land_by_loc = lm.getLandByLocation(loc);
         assertNotNull(land_by_loc);
         assert(land_by_loc.isOwner(player));
@@ -55,6 +60,9 @@ public class LandManagerTest {
         lm.deleteLand(player, loc);
 
         // Get land
+        land_by_centre = lm.getLandByCentre(loc);
+        assertNull(land_by_centre);
+
         land_by_loc = lm.getLandByLocation(loc);
         assertNull(land_by_loc);
 
@@ -85,7 +93,7 @@ public class LandManagerTest {
         LandManager new_lm = new LandManager(LandPlugin.getInstance());
         
         // Correct land
-        Land land = new_lm.getLandByLocation(loc);
+        Land land = new_lm.getLandByCentre(loc);
         assertNotNull(land);
         assert(land.isOwner(player));
         assert(land.isInside(loc));

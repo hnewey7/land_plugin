@@ -81,4 +81,24 @@ public class LandTest {
         assertTrue(land.isOwner(UUID.fromString(id.toString())));
         assertFalse(land.isOwner(UUID.randomUUID()));
     }
+
+    @Test 
+    void trusted() {
+        UUID owner = UUID.randomUUID();
+        UUID other = UUID.randomUUID();
+        Land land = new Land(owner, new Location(world, 0, 64, 0));
+
+        assertFalse(land.isTrusted(owner));
+        assertFalse(land.isTrusted(other));
+
+        land.addTrusted(other);
+
+        assertFalse(land.isTrusted(owner));
+        assert(land.isTrusted(other));
+
+        land.removeTrusted(other);
+
+        assertFalse(land.isTrusted(owner));
+        assertFalse(land.isTrusted(other));
+    }
 }

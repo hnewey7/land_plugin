@@ -80,6 +80,9 @@ public class Land {
     public boolean isOwner(UUID owner) { return this.owner.equals(owner); }
     public boolean isTrusted(UUID player) { return this.trusted.contains(player); }
 
+    public void addTrusted(UUID player) { this.trusted.add(player); }
+    public void removeTrusted(UUID player) { this.trusted.remove(player); }
+
     private static List<LandCorner> calculateCorners(Location centre) {
         List<LandCorner> corners = new ArrayList<LandCorner>();
 
