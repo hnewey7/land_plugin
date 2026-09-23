@@ -28,5 +28,10 @@ public class LandPlugin extends JavaPlugin implements Listener {
         getCommand("land").setExecutor(land_commands);
     }
 
-    // Load land size from config and initialise LandManager with it.
+    @Override 
+    public void onDisable() {
+        if (land_manager != null) {
+            land_manager.saveAllLand();
+        }
+    }
 }

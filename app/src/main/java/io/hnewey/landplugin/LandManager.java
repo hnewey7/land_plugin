@@ -32,9 +32,18 @@ public class LandManager {
     public void deleteLand(UUID owner, Location centre) {
         // Get land by location
         Land l = getLandByCentre(centre);
+        if (l == null) {
+            return;
+        }
 
         if (l.isOwner(owner)) {
+            // Remove land
             land.remove(l);
+            // Remove file
+            File file = new File(land_folder, l.getUuid().toString() + ".yml");
+            if (file != null) {
+                file.delete();
+            }
         }
     }
 
@@ -91,6 +100,8 @@ public class LandManager {
         }
 
         File file = new File(land_folder, land.getUuid().toString() + ".yml");
-        land.save(file);
+        if (file != null) {
+            land.save(file);
+        }
     }
 }
