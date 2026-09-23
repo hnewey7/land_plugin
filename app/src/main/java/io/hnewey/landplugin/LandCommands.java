@@ -24,8 +24,11 @@ public class LandCommands implements CommandExecutor, TabCompleter {
 
     @Override 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Player player = (sender instanceof Player) ? (Player) sender : null;
-
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("This command can only be used by a player.");
+            return true;
+        }
+        
         if (player.hasPermission("land.use")) {
             if (args.length == 0) {
                 String prefix = plugin.getPrefix();

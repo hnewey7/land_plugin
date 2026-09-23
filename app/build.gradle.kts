@@ -10,8 +10,7 @@ base {
 }
 
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
-    application
+    `java-library`
 }
 
 repositories {
@@ -39,13 +38,8 @@ dependencies {
 // Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(26)
+        languageVersion = JavaLanguageVersion.of(21)
     }
-}
-
-application {
-    // Define the main class for the application.
-    mainClass = "LandPlugin.App"
 }
 
 tasks.test {
