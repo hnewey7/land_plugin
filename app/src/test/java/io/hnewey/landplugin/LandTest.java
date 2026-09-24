@@ -40,12 +40,21 @@ public class LandTest {
         assertTrue(land.isInside(new Location(world, 100, 64, 100)));
     }
 
+    @Test 
+    void landSize() {
+        Land land = landAt(0, 0);
+        assertTrue(land.isInside(new Location(world, -16, 0, -16)));
+        assertFalse(land.isInside(new Location(world, -17, 0, -17)));
+        assertTrue(land.isInside(new Location(world, 15, 0, 15)));
+        assertFalse(land.isInside(new Location(world, 16, 0, 16)));
+    }
+
     @Test
     void edgesAreInclusive() {
         // land_size is 32 in config.yml, so the claim spans centre +/- 16
         Land land = landAt(100, 100);
         assertTrue(land.isInside(new Location(world, 84, 64, 84)));
-        assertTrue(land.isInside(new Location(world, 116, 64, 116)));
+        assertTrue(land.isInside(new Location(world, 115, 64, 115)));
     }
 
     @Test
@@ -61,8 +70,8 @@ public class LandTest {
     void worksAcrossNegativeCoordinates() {
         Land land = landAt(-100, -100);
         assertTrue(land.isInside(new Location(world, -100, 64, -100)));
-        assertTrue(land.isInside(new Location(world, -84, 64, -116)));
-        assertFalse(land.isInside(new Location(world, -83, 64, -100)));
+        assertTrue(land.isInside(new Location(world, -85, 64, -116)));
+        assertFalse(land.isInside(new Location(world, -84, 64, -100)));
     }
 
     @Test

@@ -50,7 +50,12 @@ public class Land {
         List<String> trusted = config.getStringList("trusted");
         this.trusted = trusted.stream().map(t -> UUID.fromString(t)).collect(Collectors.toSet());
 
-        this.world = Bukkit.getWorld(config.getString("world"));
+        World world = Bukkit.getWorld(config.getString("world"));
+        if (world == null) {
+            world = Bukkit.getWorld("world");
+        }
+        this.world = world;
+
         this.centre = new Location(world, config.getInt("centre_x"), config.getInt("centre_y"), config.getInt("centre_z"));
 
         this.corners = calculateCorners(centre);
@@ -95,10 +100,16 @@ public class Land {
         int z = centre.getBlockZ();
 
         // Calculate corners
-        corners.add(new LandCorner((int)x - size / 2, (int)z - size / 2));
-        corners.add(new LandCorner((int)x - size / 2, (int)z + size / 2));
-        corners.add(new LandCorner((int)x + size / 2, (int)z - size / 2));
-        corners.add(new LandCorner((int)x + size / 2, (int)z + size / 2));
+        int min_x = x - size / 2;
+        int min_z = z - size / 2;
+        int max_x = min_x + size - 1;
+        int max_z = min_z + size - 1;
+
+        // Add corners
+        corners.add(new LandCorner(min_x, min_z));
+        corners.add(new LandCorner(min_x, max_z));
+        corners.add(new LandCorner(max_x, min_z));
+        corners.add(new LandCorner(max_x, max_z));
 
         return corners;
     }

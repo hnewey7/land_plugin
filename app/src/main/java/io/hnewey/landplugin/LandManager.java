@@ -48,7 +48,7 @@ public class LandManager {
     }
 
     public Land getLandByCentre(Location centre) {
-        Optional<Land> potential = land.stream().filter(l -> l.getCentre().equals(centre)).findFirst();
+        Optional<Land> potential = land.stream().filter(l -> l.getCentre().getBlockX() == centre.getBlockX() && l.getCentre().getBlockY() == centre.getBlockY() && l.getCentre().getBlockZ() == centre.getBlockZ()).findFirst();
         if (potential.isPresent()) {
             return potential.get();
         } else {
@@ -80,7 +80,12 @@ public class LandManager {
         }
 
         for (File file : files) {
-            loadLand(file);
+            try {
+                loadLand(file);
+            }
+            catch (RuntimeException e) {
+                LandPlugin.getInstance().getLogger().warning("Skipping corrup land file " + file.getName() + ": " + e);
+            }
         }
     }
 
