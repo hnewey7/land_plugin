@@ -8,6 +8,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.StringUtil;
 
 import java.util.*;
 
@@ -31,24 +32,16 @@ public class LandCommands implements CommandExecutor, TabCompleter {
         
         if (player.hasPermission("land.use")) {
             if (args.length == 0) {
-                String prefix = plugin.getPrefix();
-                player.sendMessage(prefix + "§aAvailable commands:");
-
-                player.sendMessage("§a/land add §2<player> §8- §7Trust a player in your land.");
-                player.sendMessage("§a/land remove §2<player> §8- §7Untrust a player in your land.");
-                player.sendMessage("§a/land list §8- §7Show all your land.");
-                player.sendMessage("§a/land delete §8- §7Delete the land you are inside.");
-
-                if (player.hasPermission("land.block")) {
-                    player.sendMessage("§a/land block §8- §7Get a land block for claiming land.");
-                }
-
+                printHelp(player);
                 return true;
             }
 
             String sub = args[0].toLowerCase(Locale.ROOT);
 
             switch(sub) {
+                default: {
+                    printHelp(player);
+                }
                 case "add": {
                     // Check if other player provided
                     if (args.length < 2) {
@@ -189,7 +182,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                 base.add("block");
             }
 
-            return base;
+            return StringUtil.copyPartialMatches(args[0], base, new ArrayList<>());
         }
 
         if (args.length == 2) {
@@ -210,4 +203,17 @@ public class LandCommands implements CommandExecutor, TabCompleter {
         return Collections.emptyList();
     }
 
+    private void printHelp(Player player) {
+        String prefix = plugin.getPrefix();
+        player.sendMessage(prefix + "§aAvailable commands:");
+
+        player.sendMessage("§a/land add §2<player> §8- §7Trust a player in your land.");
+        player.sendMessage("§a/land remove §2<player> §8- §7Untrust a player in your land.");
+        player.sendMessage("§a/land list §8- §7Show all your land.");
+        player.sendMessage("§a/land delete §8- §7Delete the land you are inside.");
+
+        if (player.hasPermission("land.block")) {
+            player.sendMessage("§a/land block §8- §7Get a land block for claiming land.");
+        }
+    }
 }

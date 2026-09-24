@@ -16,7 +16,7 @@ public class LandBlockManager {
 
     private void loadBlock() {
         // Get material
-        Material mat = Material.matchMaterial("SPONGE");
+        Material mat = Material.SPONGE;
         
         ItemStack item = new ItemStack(mat);
         ItemMeta meta = item.getItemMeta();
@@ -35,9 +35,6 @@ public class LandBlockManager {
     }
 
     public ItemStack getBlock() {
-        if (block == null) {
-            return null;
-        }
         return block.clone();
     }
 }
