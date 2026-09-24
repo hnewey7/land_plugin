@@ -43,11 +43,6 @@ public class LandManagerTest {
         lm.createLand(player, loc);
 
         // Get land
-        Land land_by_centre = lm.getLandByCentre(loc);
-        assertNotNull(land_by_centre);
-        assert(land_by_centre.isOwner(player));
-        assert(land_by_centre.isInside(loc));
-
         Land land_by_loc = lm.getLandByLocation(loc);
         assertNotNull(land_by_loc);
         assert(land_by_loc.isOwner(player));
@@ -57,17 +52,29 @@ public class LandManagerTest {
         assert(land_by_owner.contains(land_by_loc));
 
         // Delete land
-        lm.deleteLand(player, loc);
+        lm.deleteLand(land_by_loc);
 
         // Get land
-        land_by_centre = lm.getLandByCentre(loc);
-        assertNull(land_by_centre);
-
         land_by_loc = lm.getLandByLocation(loc);
         assertNull(land_by_loc);
 
         land_by_owner = lm.getLandByOwner(player);
         assert(land_by_owner.isEmpty());
+    }
+
+    @Test 
+    void getAllLand() {
+        UUID player_one = UUID.randomUUID();
+        UUID player_two = UUID.randomUUID();
+
+        Location loc_one = new Location(world, 0, 0, 0);
+        Location loc_two = new Location(world, 100, 0, 100);
+
+        lm.createLand(player_one, loc_one);
+        lm.createLand(player_two, loc_two);
+
+        Set<Land> land_set = lm.getAllLand();
+        assert(land_set.size() == 2);
     }
 
     @Test
@@ -93,7 +100,7 @@ public class LandManagerTest {
         LandManager new_lm = new LandManager(LandPlugin.getInstance());
         
         // Correct land
-        Land land = new_lm.getLandByCentre(loc);
+        Land land = new_lm.getLandByLocation(loc);
         assertNotNull(land);
         assert(land.isOwner(player));
         assert(land.isInside(loc));

@@ -69,8 +69,23 @@ public class Land {
     //     this.corners = calculateCorners(centre);
     // }
 
+    @Override 
+    public boolean equals(Object o) {
+        return o instanceof Land other && id.equals(other.id);
+    }
+
+    @Override 
+    public int hashCode() { return id.hashCode(); }
+
     public UUID getUuid() { return this.id; }
+    public UUID getWorldUuid() { return this.world.getUID(); }
+    public UUID getOwner() { return this.owner; }
     public Location getCentre() { return this.centre; }
+
+    public int getMinX() { return corners.get(0).x(); }
+    public int getMinZ() { return corners.get(0).z(); }
+    public int getMaxX() { return corners.get(3).x(); }
+    public int getMaxZ() { return corners.get(3).z(); }
 
     public boolean isInside(Location loc) {
         // Get location coords
