@@ -11,6 +11,7 @@ public class LandManager {
     private File land_folder;
 
     private Set<Land> land = new HashSet<Land>();
+    private final int size;
 
     LandManager(LandPlugin plugin) {
         land_folder = new File(plugin.getDataFolder(), "land");
@@ -18,11 +19,17 @@ public class LandManager {
             land_folder.mkdirs();
         }
 
+        int size = plugin.getConfig().getInt("land_size", 32);
+        if (size < 16) {
+            size = 16;
+        }
+        this.size = size;
+
         loadAllLand();
     }
 
     public void createLand(UUID owner, Location centre) {
-        land.add(new Land(owner, centre));
+        land.add(new Land(owner, centre, size));
     }
 
     public void deleteLand(Land l) {

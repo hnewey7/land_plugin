@@ -14,30 +14,31 @@ import java.io.IOException;
 public class Land {
     private record LandCorner(int x, int z) {}
 
-    private static final int size = LandPlugin.getInstance().getConfig().getInt("land_size", 32);
-
     private final UUID id;
     private final UUID owner;
     private final Location centre;
+    private final int size;
     private final World world;
     private final List<LandCorner> corners;
 
     private Set<UUID> trusted;
 
-    Land(UUID owner, Location centre) {
+    Land(UUID owner, Location centre, int size) {
         this.id = UUID.randomUUID();
         this.owner = owner;
         this.trusted = new HashSet<UUID>();
         this.centre = centre;
+        this.size = size;
         this.world = centre.getWorld();
         this.corners = calculateCorners(centre);
     }
 
-    Land(UUID owner, Set<UUID> trusted, Location centre) {
+    Land(UUID owner, Set<UUID> trusted, Location centre, int size) {
         this.id = UUID.randomUUID();
         this.owner = owner;
         this.trusted = new HashSet<UUID>(trusted);
         this.centre = centre;
+        this.size = size;
         this.world = centre.getWorld();
         this.corners = calculateCorners(centre);
     }
@@ -57,6 +58,7 @@ public class Land {
         this.world = world;
 
         this.centre = new Location(world, config.getInt("centre_x"), config.getInt("centre_y"), config.getInt("centre_z"));
+        this.size = config.getInt("size");
 
         this.corners = calculateCorners(centre);
     }
@@ -88,12 +90,8 @@ public class Land {
     public void addTrusted(UUID player) { this.trusted.add(player); }
     public void removeTrusted(UUID player) { this.trusted.remove(player); }
 
-    private static List<LandCorner> calculateCorners(Location centre) {
+    private List<LandCorner> calculateCorners(Location centre) {
         List<LandCorner> corners = new ArrayList<LandCorner>();
-
-        if (size <= 0) {
-            return corners; 
-        }
 
         // Get centre coords
         int x = centre.getBlockX();
@@ -125,6 +123,7 @@ public class Land {
         config.set("centre_x", this.centre.getBlockX());
         config.set("centre_y", this.centre.getBlockY());
         config.set("centre_z", this.centre.getBlockZ());
+        config.set("size", this.size);
 
         try {
             config.save(file);

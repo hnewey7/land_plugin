@@ -31,7 +31,7 @@ public class LandTest {
     }
 
     private Land landAt(int x, int z) {
-        return new Land(UUID.randomUUID(), new Location(world, x, 64, z));
+        return new Land(UUID.randomUUID(), new Location(world, x, 64, z), 32);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class LandTest {
     @Test
     void ownerMatchesByValue() {
         UUID id = UUID.randomUUID();
-        Land land = new Land(id, new Location(world, 0, 64, 0));
+        Land land = new Land(id, new Location(world, 0, 64, 0), 32);
         assertTrue(land.isOwner(id));
         // Equal UUID, different instance - what you'd get after loading from disk
         assertTrue(land.isOwner(UUID.fromString(id.toString())));
@@ -95,7 +95,7 @@ public class LandTest {
     void trusted() {
         UUID owner = UUID.randomUUID();
         UUID other = UUID.randomUUID();
-        Land land = new Land(owner, new Location(world, 0, 64, 0));
+        Land land = new Land(owner, new Location(world, 0, 64, 0),32);
 
         assertFalse(land.isTrusted(owner));
         assertFalse(land.isTrusted(other));
