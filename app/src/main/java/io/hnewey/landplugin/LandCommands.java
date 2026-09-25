@@ -39,9 +39,6 @@ public class LandCommands implements CommandExecutor, TabCompleter {
             String sub = args[0].toLowerCase(Locale.ROOT);
 
             switch(sub) {
-                default: {
-                    printHelp(player);
-                }
                 case "add": {
                     // Check if other player provided
                     if (args.length < 2) {
@@ -164,6 +161,10 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                         player.sendMessage("§4You do not have permission for this command!");
                         return true;
                     }
+                }
+                default: {
+                    printHelp(player);
+                    return true;
                 }
             }
         } else {

@@ -1,10 +1,8 @@
 package io.hnewey.landplugin;
 
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.io.File;
 
 
@@ -58,17 +56,21 @@ public class LandManager {
         // Remove from land by owner
         Set<Land> land_set = land_by_owner.get(l.getOwner());
         if (land_set != null) {
-            if (land_set.size() == 1) {
+            land_set.remove(l);
+            if (land_set.isEmpty()) {
                 land_by_owner.remove(l.getOwner());
-            } else {
-                land_set.remove(l);
             }
         }
 
         // Remove from land by chunks
         Set<ChunkKey> chunks = getChunks(l);
         for (ChunkKey ck : chunks) {
-            land_by_chunk.remove(ck);
+            Set<Land> chunk_land_set = land_by_chunk.get(ck);
+            if (chunk_land_set == null) continue;
+            chunk_land_set.remove(l);
+            if (chunk_land_set.isEmpty()) {
+                land_by_chunk.remove(ck);
+            }
         }
 
         // Remove from all land
@@ -82,7 +84,7 @@ public class LandManager {
     }
 
     public Set<Land> getAllLand() {
-        return all_land;
+        return Collections.unmodifiableSet(all_land);
     }
 
     public Land getLandByLocation(Location loc) {
