@@ -20,6 +20,11 @@ repositories {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
+
+    maven {
+        name = "enginehub" 
+        url = uri("https://maven.enginehub.org/repo/")
+    }
 }
 
 dependencies {
@@ -27,6 +32,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.16")
 
     // MockBukkit provides a fake server/world so Location, World etc. work in unit tests.
     // Its version must match the Paper API version: 4.45.0 is the last build for 1.21.4.

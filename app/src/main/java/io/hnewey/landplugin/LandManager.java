@@ -1,6 +1,8 @@
 package io.hnewey.landplugin;
 
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.io.File;
@@ -15,6 +17,7 @@ public class LandManager {
     private Map<ChunkKey, Set<Land>> land_by_chunk = new HashMap<ChunkKey, Set<Land>>();
     private Set<Land> all_land = new HashSet<>();
 
+    private final List<String> enabled_worlds;
     private final int size;
 
     LandManager(LandPlugin plugin) {
@@ -29,7 +32,25 @@ public class LandManager {
         }
         this.size = size;
 
+        List<String> worlds = plugin.getConfig().getStringList("enabled_worlds");
+        if (worlds.size() < 1) {
+            worlds.add("world");
+        }
+        this.enabled_worlds = worlds;
+
         loadAllLand();
+    }
+
+    public boolean isWorldEnabled(World world) {
+        return this.enabled_worlds.contains(world.getName());
+    }
+
+    public boolean isForeignLand(Player player, Location loc) {
+        Land land = getLandByLocation(loc);
+        if (land == null) {
+            return false;
+        }
+        return !land.isOwner(player.getUniqueId());
     }
 
     public void createLand(UUID owner, Location centre) {

@@ -4,6 +4,7 @@ main: io.hnewey.landplugin.LandPlugin
 api-version: '26.2'
 author: hnewey
 description: Land Plugin allows players to claim land through claim blocks which prevents other players from building on their land.
+softdepend: [WorldGuard]
 
 commands:
   land:

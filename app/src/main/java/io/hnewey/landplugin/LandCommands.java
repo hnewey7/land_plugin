@@ -69,7 +69,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                     }
 
                     land.addTrusted(other.getUniqueId());
-                    player.sendMessage("§aThe player has been added to your land.");
+                    player.sendMessage("§2The player has been added to your land.");
 
                     return true;
                 }
@@ -103,7 +103,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                     }
 
                     land.removeTrusted(other.getUniqueId());
-                    player.sendMessage("§aThe player has been removed from your land.");
+                    player.sendMessage("§2The player has been removed from your land.");
 
                     return true;
                 }
@@ -140,7 +140,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                     }
 
                     land_manager.deleteLand(land);
-                    player.sendMessage("§aThe land has been deleted.");
+                    player.sendMessage("§2The land has been deleted.");
 
                     return true;
                 }
@@ -155,7 +155,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                         ItemStack clone = block.clone();
                         player.getInventory().addItem(clone);
                         
-                        player.sendMessage("§aYou have received a land block.");
+                        player.sendMessage("§2You have received a land block.");
                         return true;
                     } else {
                         player.sendMessage("§4You do not have permission for this command!");

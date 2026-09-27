@@ -7,9 +7,13 @@ public class LandPlugin extends JavaPlugin {
     private static LandManager land_manager;
     private static LandBlockManager block_manager;
 
+    private boolean worldguard_enabled;
+
     public static LandPlugin getInstance() { return instance; }
     public static LandManager getLandManager() { return land_manager; }
     public static LandBlockManager getBlockManager() { return block_manager; }
+
+    public boolean getWorldGuardEnabled() { return this.worldguard_enabled; }
     public String getPrefix() { return getConfig().getString("prefix", "&2&lLand &8&l| &r").replace("&", "§"); }
 
     @Override 
@@ -18,7 +22,11 @@ public class LandPlugin extends JavaPlugin {
         saveDefaultConfig();
 
         land_manager = new LandManager(instance);
-        block_manager = new LandBlockManager();
+        block_manager = new LandBlockManager(this);
+
+        getServer().getPluginManager().registerEvents(new LandListener(instance, land_manager, block_manager), instance);
+
+        worldguard_enabled = getServer().getPluginManager().getPlugin("WorldGuard") != null;
 
         LandCommands land_commands = new LandCommands(instance, land_manager, block_manager);
         getCommand("land").setExecutor(land_commands);

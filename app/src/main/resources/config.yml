@@ -1,2 +1,5 @@
 land_size: 32
 prefix: "&2&lLand &8&l| &r"
+enabled_worlds:
+  - world
+  - world_nether
