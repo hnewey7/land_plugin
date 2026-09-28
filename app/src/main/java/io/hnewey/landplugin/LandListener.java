@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
@@ -43,7 +44,19 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onBlockPlace(BlockPlaceEvent e) {
         Player player = e.getPlayer();
-        Location loc = e.getBlockPlaced().getLocation();
+        if (player == null) {
+            return;
+        }
+
+        Block block = e.getBlockPlaced();
+        if (block == null) {
+            return;
+        }
+        
+        Location loc = block.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to place block in another player's land!");
@@ -84,7 +97,19 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onBlockBreak(BlockBreakEvent e) {
         Player player = e.getPlayer();
-        Location loc = e.getBlock().getLocation();
+        if (player == null) {
+            return;
+        }
+
+        Block block = e.getBlock();
+        if (block == null) {
+            return;
+        }
+        
+        Location loc = block.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to break blocks in another player's land!");
@@ -96,7 +121,19 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onBlockIgnite(BlockIgniteEvent e) {
         Player player = e.getPlayer();
-        Location loc = e.getBlock().getLocation();
+        if (player == null) {
+            return;
+        }
+        
+        Block block = e.getBlock();
+        if (block == null) {
+            return;
+        }
+        
+        Location loc = block.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to ignite blocks in another player's land!");
@@ -108,7 +145,19 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onSignChange(SignChangeEvent e) {
         Player player = e.getPlayer();
-        Location loc = e.getBlock().getLocation();
+        if (player == null) {
+            return;
+        }
+        
+        Block block = e.getBlock();
+        if (block == null) {
+            return;
+        }
+        
+        Location loc = block.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to change signs in another player's land!");
@@ -120,8 +169,19 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onPlayerInteract(PlayerInteractEvent e) {
         Player player = e.getPlayer();
+        if (player == null) {
+            return;
+        }
+        
         Block block = e.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+        
         Location loc = block.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (block.getState() instanceof org.bukkit.block.Container) {
             if (!land_manager.hasAccess(player, loc)) {
@@ -148,8 +208,19 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
         Player player = e.getPlayer();
+        if (player == null) {
+            return;
+        }
+
         Entity entity = e.getRightClicked();
+        if (entity == null) {
+            return;
+        }
+
         Location loc = entity.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (entity instanceof org.bukkit.entity.ItemFrame || entity instanceof org.bukkit.entity.ArmorStand || entity instanceof org.bukkit.entity.Animals || entity instanceof org.bukkit.entity.Villager) {
             if (!land_manager.hasAccess(player, loc)) {
@@ -163,7 +234,19 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onBedEnter(PlayerBedEnterEvent e) {
         Player player = e.getPlayer();
-        Location loc = e.getBed().getLocation();
+        if (player == null) {
+            return;
+        }
+
+        Block bed = e.getBed();
+        if (bed == null) {
+            return;
+        }
+
+        Location loc = bed.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to enter a bed in another player's land!");
@@ -175,7 +258,19 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onBucketEmpty(PlayerBucketEmptyEvent e) {
         Player player = e.getPlayer();
-        Location loc = e.getBlock().getLocation();
+        if (player == null) {
+            return;
+        }
+
+        Block block = e.getBlock();
+        if (block == null) {
+            return;
+        }
+        
+        Location loc = block.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to empty a bucket in another player's land!");
@@ -187,7 +282,16 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onBucketFill(PlayerBucketFillEvent e) {
         Player player = e.getPlayer();
-        Location loc = e.getBlock().getLocation();
+        
+        Block block = e.getBlock();
+        if (block == null) {
+            return;
+        }
+        
+        Location loc = block.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to fill a bucket in another player's land!");
@@ -199,7 +303,16 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onArmorStandManipulate(PlayerArmorStandManipulateEvent e) {
         Player player = e.getPlayer();
-        Location loc = e.getRightClicked().getLocation();
+        
+        ArmorStand armor = e.getRightClicked();
+        if (armor == null) {
+            return;
+        }
+        
+        Location loc = armor.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to manipulate armor stand in another player's land!");
@@ -228,7 +341,7 @@ public class LandListener implements Listener {
             } else if (after.isTrusted(player.getUniqueId())) {
                 colour_code = "§s";
             } else {
-                colour_code = "§m";
+                colour_code = "§c";
             }
 
             player.sendMessage("§7You have entered the land of " + colour_code + owner_name);
@@ -247,7 +360,7 @@ public class LandListener implements Listener {
             } else if (before.isTrusted(player.getUniqueId())) {
                 colour_code = "§s";
             } else {
-                colour_code = "§m";
+                colour_code = "§c";
             }
 
             player.sendMessage("§7You have left the land of " + colour_code + owner_name);
@@ -275,7 +388,7 @@ public class LandListener implements Listener {
             } else if (after.isTrusted(player.getUniqueId())) {
                 colour_code = "§s";
             } else {
-                colour_code = "§m";
+                colour_code = "§c";
             }
 
             player.sendMessage("§7You have entered the land of " + colour_code + owner_name);
@@ -294,7 +407,7 @@ public class LandListener implements Listener {
             } else if (before.isTrusted(player.getUniqueId())) {
                 colour_code = "§s";
             } else {
-                colour_code = "§m";
+                colour_code = "§c";
             }
 
             player.sendMessage("§7You have left the land of " + colour_code + owner_name);
@@ -305,7 +418,16 @@ public class LandListener implements Listener {
     @EventHandler 
     public void onHangingPlace(HangingPlaceEvent e) {
         Player player = e.getPlayer();
-        Location loc = e.getBlock().getLocation();
+        
+        Block block = e.getBlock();
+        if (block == null) {
+            return;
+        }
+        
+        Location loc = block.getLocation();
+        if (loc == null) {
+            return;
+        }
 
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to place hanging items in another player's land!");
@@ -318,6 +440,9 @@ public class LandListener implements Listener {
     public void onHangingBlockBreak(HangingBreakByEntityEvent e) {
         if (e.getRemover() instanceof Player player) {
             Location loc = player.getLocation();
+            if (loc == null) {
+                return;
+            }
 
             if (!land_manager.hasAccess(player, loc)) {
                 player.sendMessage("§4Unable to break items in another player's land!");
@@ -331,7 +456,14 @@ public class LandListener implements Listener {
     public void onPvE(EntityDamageByEntityEvent e) {
         if (e.getDamager() instanceof Player player && !(e.getEntity() instanceof Monster)) {
             Entity other = e.getEntity();
+            if (other == null) {
+                return;
+            }
+
             Location loc = other.getLocation();
+            if (loc == null) {
+                return;
+            }
 
             if (!land_manager.hasAccess(player, loc)) {
                 player.sendMessage("§4Unable to damage entity in another player's land!");
@@ -340,7 +472,14 @@ public class LandListener implements Listener {
             }
         } else if (e.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player player) {
             Entity other = e.getEntity();
+            if (other == null) {
+                return;
+            }
+
             Location loc = other.getLocation();
+            if (loc == null) {
+                return;
+            }
 
             if (!land_manager.hasAccess(player, loc)) {
                 player.sendMessage("§4Unable to damage entity in another player's land!");
