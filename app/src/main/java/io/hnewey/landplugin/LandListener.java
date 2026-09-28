@@ -1,5 +1,6 @@
 package io.hnewey.landplugin;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -20,6 +21,8 @@ import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -201,6 +204,100 @@ public class LandListener implements Listener {
         if (!land_manager.hasAccess(player, loc)) {
             player.sendMessage("§4Unable to manipulate armor stand in another player's land!");
             e.setCancelled(true);
+            return;
+        }
+    }
+
+    @EventHandler 
+    public void onMove(PlayerMoveEvent e) {
+        Player player = e.getPlayer();
+
+        // Get land
+        Land before = land_manager.getLandByLocation(e.getFrom());
+        Land after = land_manager.getLandByLocation(e.getTo());
+
+        // Entering
+        if (after != null && after != before) {
+            // Get owner
+            String owner_name = Bukkit.getOfflinePlayer(after.getOwner()).getName();
+
+            // Get colour code to display
+            String colour_code;
+            if (after.isOwner(player.getUniqueId())) {
+                colour_code = "§6";
+            } else if (after.isTrusted(player.getUniqueId())) {
+                colour_code = "§s";
+            } else {
+                colour_code = "§m";
+            }
+
+            player.sendMessage("§7You have entered the land of " + colour_code + owner_name);
+            return;
+        }
+
+        // Leaving
+        if (after == null && after != before) {
+            // Get owner
+            String owner_name = Bukkit.getOfflinePlayer(before.getOwner()).getName();
+
+            // Get colour code to display
+            String colour_code;
+            if (before.isOwner(player.getUniqueId())) {
+                colour_code = "§6";
+            } else if (before.isTrusted(player.getUniqueId())) {
+                colour_code = "§s";
+            } else {
+                colour_code = "§m";
+            }
+
+            player.sendMessage("§7You have left the land of " + colour_code + owner_name);
+            return;
+        }
+    }
+
+    @EventHandler 
+    public void onTeleport(PlayerTeleportEvent e) {
+        Player player = e.getPlayer();
+
+        // Get land
+        Land before = land_manager.getLandByLocation(e.getFrom());
+        Land after = land_manager.getLandByLocation(e.getTo());
+
+        // Entering
+        if (after != null && after != before) {
+            // Get owner
+            String owner_name = Bukkit.getOfflinePlayer(after.getOwner()).getName();
+
+            // Get colour code to display
+            String colour_code;
+            if (after.isOwner(player.getUniqueId())) {
+                colour_code = "§6";
+            } else if (after.isTrusted(player.getUniqueId())) {
+                colour_code = "§s";
+            } else {
+                colour_code = "§m";
+            }
+
+            player.sendMessage("§7You have entered the land of " + colour_code + owner_name);
+            return;
+        }
+
+        // Leaving
+        if (after == null && after != before) {
+            // Get owner
+            String owner_name = Bukkit.getOfflinePlayer(before.getOwner()).getName();
+
+            // Get colour code to display
+            String colour_code;
+            if (before.isOwner(player.getUniqueId())) {
+                colour_code = "§6";
+            } else if (before.isTrusted(player.getUniqueId())) {
+                colour_code = "§s";
+            } else {
+                colour_code = "§m";
+            }
+
+            player.sendMessage("§7You have left the land of " + colour_code + owner_name);
             return;
         }
     }
