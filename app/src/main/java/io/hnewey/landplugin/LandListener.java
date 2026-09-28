@@ -339,7 +339,7 @@ public class LandListener implements Listener {
             if (after.isOwner(player.getUniqueId())) {
                 colour_code = "§6";
             } else if (after.isTrusted(player.getUniqueId())) {
-                colour_code = "§s";
+                colour_code = "§b";
             } else {
                 colour_code = "§c";
             }
@@ -358,7 +358,7 @@ public class LandListener implements Listener {
             if (before.isOwner(player.getUniqueId())) {
                 colour_code = "§6";
             } else if (before.isTrusted(player.getUniqueId())) {
-                colour_code = "§s";
+                colour_code = "§b";
             } else {
                 colour_code = "§c";
             }
@@ -386,7 +386,7 @@ public class LandListener implements Listener {
             if (after.isOwner(player.getUniqueId())) {
                 colour_code = "§6";
             } else if (after.isTrusted(player.getUniqueId())) {
-                colour_code = "§s";
+                colour_code = "§b";
             } else {
                 colour_code = "§c";
             }
@@ -405,7 +405,7 @@ public class LandListener implements Listener {
             if (before.isOwner(player.getUniqueId())) {
                 colour_code = "§6";
             } else if (before.isTrusted(player.getUniqueId())) {
-                colour_code = "§s";
+                colour_code = "§b";
             } else {
                 colour_code = "§c";
             }

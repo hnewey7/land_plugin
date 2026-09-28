@@ -3,3 +3,5 @@ prefix: "&2&lLand &8&l| &r"
 enabled_worlds:
   - world
   - world_nether
+land_name_blacklist:
+  - default

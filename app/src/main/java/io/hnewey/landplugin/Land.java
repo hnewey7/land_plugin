@@ -21,6 +21,8 @@ public class Land {
     private final World world;
     private final List<LandCorner> corners;
 
+    private String name;
+
     private Set<UUID> trusted;
 
     Land(UUID owner, Location centre, int size) {
@@ -31,6 +33,7 @@ public class Land {
         this.size = size;
         this.world = centre.getWorld();
         this.corners = calculateCorners(centre);
+        this.name = this.world.getName();
     }
 
     Land(UUID owner, Set<UUID> trusted, Location centre, int size) {
@@ -41,6 +44,7 @@ public class Land {
         this.size = size;
         this.world = centre.getWorld();
         this.corners = calculateCorners(centre);
+        this.name = this.world.getName();
     }
 
     Land(File file) {
@@ -61,6 +65,8 @@ public class Land {
         this.size = config.getInt("size");
 
         this.corners = calculateCorners(centre);
+
+        this.name = config.getString("name");
     }
 
     // Land(LandGroup group, Location centre) {
@@ -81,11 +87,16 @@ public class Land {
     public UUID getWorldUuid() { return this.world.getUID(); }
     public UUID getOwner() { return this.owner; }
     public Location getCentre() { return this.centre; }
+    public String getName() { return this.name; }
 
     public int getMinX() { return corners.get(0).x(); }
     public int getMinZ() { return corners.get(0).z(); }
     public int getMaxX() { return corners.get(3).x(); }
     public int getMaxZ() { return corners.get(3).z(); }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public boolean isInside(Location loc) {
         // Get location coords
@@ -139,6 +150,8 @@ public class Land {
         config.set("centre_y", this.centre.getBlockY());
         config.set("centre_z", this.centre.getBlockZ());
         config.set("size", this.size);
+
+        config.set("name", this.name);
 
         try {
             config.save(file);

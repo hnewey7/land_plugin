@@ -11,16 +11,41 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.StringUtil;
 
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class LandCommands implements CommandExecutor, TabCompleter {
     private final LandPlugin plugin;
     private final LandManager land_manager;
     private final LandBlockManager block_manager;
+    private final List<Pattern> name_blacklist;
 
     LandCommands(LandPlugin plugin, LandManager land_manager, LandBlockManager block_manager) {
         this.plugin = plugin;
         this.land_manager = land_manager;
         this.block_manager = block_manager;
+        this.name_blacklist = loadNameBlacklist();
+    }
+
+    private List<Pattern> loadNameBlacklist() {
+        List<Pattern> patterns = new ArrayList<>();
+        for (String entry: plugin.getConfig().getStringList("land_name_blacklist")) {
+            try {
+                patterns.add(Pattern.compile(entry, Pattern.CASE_INSENSITIVE));
+            } catch (PatternSyntaxException ex) {
+                plugin.getLogger().warning("Invalid land_name_blacklist pattern '" + entry + "': " + ex.getMessage());
+            } 
+        }
+        return patterns;
+    }
+
+    private boolean isBlacklistedName(String name) {
+        for (Pattern pattern : name_blacklist) {
+            if (pattern.matcher(name).find()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override 
@@ -107,6 +132,47 @@ public class LandCommands implements CommandExecutor, TabCompleter {
 
                     return true;
                 }
+                case "name": {
+                    // Check if the player has provided a name
+                    if (args.length < 2) {
+                        player.sendMessage("§4You must provide a name for your land.");
+                        return true;
+                    }
+
+                    // Check if too many args were provided
+                    if (args.length > 2) {
+                        player.sendMessage("§4Your land name can only be a single word.");
+                        return true;
+                    }
+
+                    // Check if the name is too long
+                    if (args[1].length() > 15) {
+                        player.sendMessage("§4Your land name cannot exceed 15 characters.");
+                        return true;
+                    }
+
+                    // Check player is in their own land
+                    Location loc = player.getLocation();
+                    if (loc == null) {
+                        return true;
+                    }
+
+                    Land land = land_manager.getLandByLocation(loc);
+                    if (land == null || !land.isOwner(player.getUniqueId())) {
+                        player.sendMessage("§4You must be in your own land to set the name!");
+                        return true;
+                    }
+
+                    // Check name is not on blacklist
+                    if (isBlacklistedName(args[1])) {
+                        player.sendMessage("§4You are not allowed to set your land to this name!");
+                        return true;
+                    }
+
+                    land.setName(args[1]);
+                    player.sendMessage("§2The land's name has been set to §a" + args[1]);
+                    return true;
+                }
                 case "list": {
                     // Get land of player
                     Set<Land> land = land_manager.getLandByOwner(player.getUniqueId());
@@ -122,7 +188,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                         player.sendMessage(String.format(
                             "§8%d. §a%s §8- §7X: §a%d§7, Y: §a%d§7, Z: §a%d",
                             index++,
-                            centre.getWorld().getName(),
+                            l.getName(),
                             centre.getBlockX(),
                             centre.getBlockY(),
                             centre.getBlockZ()
@@ -210,6 +276,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
 
         player.sendMessage("§a/land add §2<player> §8- §7Trust a player in your land.");
         player.sendMessage("§a/land remove §2<player> §8- §7Untrust a player in your land.");
+        player.sendMessage("§a/land name §2<name> §8- §7Set the name of your land.");
         player.sendMessage("§a/land list §8- §7Show all your land.");
         player.sendMessage("§a/land delete §8- §7Delete the land you are inside.");
 
