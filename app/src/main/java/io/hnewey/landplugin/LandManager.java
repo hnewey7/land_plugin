@@ -45,6 +45,14 @@ public class LandManager {
         return this.enabled_worlds.contains(world.getName());
     }
 
+    public boolean hasAccess(Player player, Location loc) {
+        Land land = getLandByLocation(loc);
+        if (land == null) {
+            return true;
+        }
+        return land.isOwner(player.getUniqueId()) || land.isTrusted(player.getUniqueId());
+    }
+
     public boolean isForeignLand(Player player, Location loc) {
         Land land = getLandByLocation(loc);
         if (land == null) {
