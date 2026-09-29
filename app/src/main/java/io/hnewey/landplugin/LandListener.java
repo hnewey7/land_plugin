@@ -81,6 +81,12 @@ public class LandListener implements Listener {
                 return;
             }
 
+            if (plugin.getWorldGuardEnabled() && WorldGuardHook.isOverlappingWorldRegion(loc, land_manager.getLandSize())) {
+                player.sendMessage("§4Land claim not allowed to overlap this region!");
+                e.setCancelled(true);
+                return;
+            }
+
             if (land_manager.isForeignLand(player, loc)) {
                 player.sendMessage("§4Unable to claim land in another player's land!");
                 e.setCancelled(true);

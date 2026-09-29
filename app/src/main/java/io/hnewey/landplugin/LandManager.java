@@ -41,6 +41,8 @@ public class LandManager {
         loadAllLand();
     }
 
+    public int getLandSize() { return size; }
+
     public boolean isWorldEnabled(World world) {
         return this.enabled_worlds.contains(world.getName());
     }
