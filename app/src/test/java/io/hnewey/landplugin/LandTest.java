@@ -96,18 +96,19 @@ public class LandTest {
         UUID owner = UUID.randomUUID();
         UUID other = UUID.randomUUID();
         Land land = new Land(owner, new Location(world, 0, 64, 0),32);
+        LandGroup group = new LandGroup(owner, land);
 
-        assertFalse(land.isTrusted(owner));
-        assertFalse(land.isTrusted(other));
+        assertFalse(group.isTrusted(owner));
+        assertFalse(group.isTrusted(other));
 
-        land.addTrusted(other);
+        group.addTrusted(other);
 
-        assertFalse(land.isTrusted(owner));
-        assert(land.isTrusted(other));
+        assertFalse(group.isTrusted(owner));
+        assert(group.isTrusted(other));
 
-        land.removeTrusted(other);
+        group.removeTrusted(other);
 
-        assertFalse(land.isTrusted(owner));
-        assertFalse(land.isTrusted(other));
+        assertFalse(group.isTrusted(owner));
+        assertFalse(group.isTrusted(other));
     }
 }

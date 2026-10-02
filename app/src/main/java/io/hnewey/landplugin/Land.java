@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class Land {
-    private record LandCorner(int x, int z) {}
+    public record LandCorner(int x, int z) {}
 
     private final UUID id;
     private final UUID owner;
@@ -21,30 +21,21 @@ public class Land {
     private final World world;
     private final List<LandCorner> corners;
 
-    private String name;
+    private UUID land_group;
 
-    private Set<UUID> trusted;
+    // Pre-group data, only read from old land files so it can be migrated into a group.
+    private final Set<UUID> legacy_trusted;
+    private final String legacy_name;
 
     Land(UUID owner, Location centre, int size) {
         this.id = UUID.randomUUID();
         this.owner = owner;
-        this.trusted = new HashSet<UUID>();
         this.centre = centre;
         this.size = size;
         this.world = centre.getWorld();
-        this.corners = calculateCorners(centre);
-        this.name = this.world.getName();
-    }
-
-    Land(UUID owner, Set<UUID> trusted, Location centre, int size) {
-        this.id = UUID.randomUUID();
-        this.owner = owner;
-        this.trusted = new HashSet<UUID>(trusted);
-        this.centre = centre;
-        this.size = size;
-        this.world = centre.getWorld();
-        this.corners = calculateCorners(centre);
-        this.name = this.world.getName();
+        this.corners = calculateCorners(centre, size);
+        this.legacy_trusted = Set.of();
+        this.legacy_name = null;
     }
 
     Land(File file) {
@@ -52,8 +43,12 @@ public class Land {
         this.id = UUID.fromString(config.getString("id"));
         this.owner = UUID.fromString(config.getString("owner"));
 
+        String group = config.getString("land_group");
+        this.land_group = group == null ? null : UUID.fromString(group);
+
         List<String> trusted = config.getStringList("trusted");
-        this.trusted = trusted.stream().map(t -> UUID.fromString(t)).collect(Collectors.toSet());
+        this.legacy_trusted = trusted.stream().map(t -> UUID.fromString(t)).collect(Collectors.toSet());
+        this.legacy_name = config.getString("name");
 
         World world = Bukkit.getWorld(config.getString("world"));
         if (world == null) {
@@ -64,38 +59,34 @@ public class Land {
         this.centre = new Location(world, config.getInt("centre_x"), config.getInt("centre_y"), config.getInt("centre_z"));
         this.size = config.getInt("size");
 
-        this.corners = calculateCorners(centre);
-
-        this.name = config.getString("name");
+        this.corners = calculateCorners(centre, size);
     }
 
-    // Land(LandGroup group, Location centre) {
-    //     this.owner = group.getOwner();
-    //     this.trusted = group.getTrusted();
-    //     this.corners = calculateCorners(centre);
-    // }
-
-    @Override 
+    @Override
     public boolean equals(Object o) {
         return o instanceof Land other && id.equals(other.id);
     }
 
-    @Override 
+    @Override
     public int hashCode() { return id.hashCode(); }
 
     public UUID getUuid() { return this.id; }
     public UUID getWorldUuid() { return this.world.getUID(); }
+    public World getWorld() { return this.world; }
     public UUID getOwner() { return this.owner; }
     public Location getCentre() { return this.centre; }
-    public String getName() { return this.name; }
+    public UUID getLandGroup() { return this.land_group; }
+
+    public Set<UUID> getLegacyTrusted() { return this.legacy_trusted; }
+    public String getLegacyName() { return this.legacy_name; }
 
     public int getMinX() { return corners.get(0).x(); }
     public int getMinZ() { return corners.get(0).z(); }
     public int getMaxX() { return corners.get(3).x(); }
     public int getMaxZ() { return corners.get(3).z(); }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setLandGroup(UUID land_group) {
+        this.land_group = land_group;
     }
 
     public boolean isInside(Location loc) {
@@ -111,12 +102,8 @@ public class Land {
     }
 
     public boolean isOwner(UUID owner) { return this.owner.equals(owner); }
-    public boolean isTrusted(UUID player) { return this.trusted.contains(player); }
 
-    public void addTrusted(UUID player) { this.trusted.add(player); }
-    public void removeTrusted(UUID player) { this.trusted.remove(player); }
-
-    private List<LandCorner> calculateCorners(Location centre) {
+    public static List<LandCorner> calculateCorners(Location centre, int size) {
         List<LandCorner> corners = new ArrayList<LandCorner>();
 
         // Get centre coords
@@ -140,18 +127,16 @@ public class Land {
 
     public void save(File file) {
         FileConfiguration config = new YamlConfiguration();
-        
+
         config.set("id", this.id.toString());
         config.set("owner", this.owner.toString());
-        config.set("trusted", this.trusted.stream().map(t -> t.toString()).collect(Collectors.toList()));
+        config.set("land_group", this.land_group == null ? null : this.land_group.toString());
 
         config.set("world", this.world.getName());
         config.set("centre_x", this.centre.getBlockX());
         config.set("centre_y", this.centre.getBlockY());
         config.set("centre_z", this.centre.getBlockZ());
         config.set("size", this.size);
-
-        config.set("name", this.name);
 
         try {
             config.save(file);

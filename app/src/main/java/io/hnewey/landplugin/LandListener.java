@@ -1,5 +1,7 @@
 package io.hnewey.landplugin;
 
+import java.util.Objects;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -59,7 +61,7 @@ public class LandListener implements Listener {
         }
 
         if (!land_manager.hasAccess(player, loc)) {
-            player.sendMessage("§4Unable to place block in another player's land!");
+            player.sendMessage("§7Unable to place block in §canother player's§7 land!");
             e.setCancelled(true);
             return;
         }
@@ -70,31 +72,37 @@ public class LandListener implements Listener {
             plugin.getLogger().info(player.getName() + " has placed a land block.");
 
             if (!land_manager.isWorldEnabled(loc.getWorld())) {
-                player.sendMessage("§4Land claims are not enabled in this world!");
+                player.sendMessage("§7Land claims are §cnot enabled§7 in this world!");
                 e.setCancelled(true);
                 return;
             }
 
             if (plugin.getWorldGuardEnabled() && WorldGuardHook.isInWorldRegion(loc)) {
-                player.sendMessage("§4Land claims are not enabled in this region!");
+                player.sendMessage("§7Land claims are §cnot enabled§7 in this region!");
                 e.setCancelled(true);
                 return;
             }
 
             if (plugin.getWorldGuardEnabled() && WorldGuardHook.isOverlappingWorldRegion(loc, land_manager.getLandSize())) {
-                player.sendMessage("§4Land claim not allowed to overlap this region!");
+                player.sendMessage("§7Land claim §cnot allowed§7 to overlap this region!");
                 e.setCancelled(true);
                 return;
             }
 
             if (land_manager.isForeignLand(player, loc)) {
-                player.sendMessage("§4Unable to claim land in another player's land!");
+                player.sendMessage("§7Unable to claim land in §canother player's§7 land!");
+                e.setCancelled(true);
+                return;
+            }
+
+            if (land_manager.isOverlappingForeignLand(player, loc)) {
+                player.sendMessage("§7Unable to claim land overlapping §canother player's§7 land!");
                 e.setCancelled(true);
                 return;
             }
 
             this.land_manager.createLand(player.getUniqueId(), loc);
-            player.sendMessage("§2You have claimed land at: " + String.format("§7X: §a%d§7, Y: §a%d§7, Z: §a%d", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+            player.sendMessage("§7You have claimed land at: " + String.format("§7X: §6%d§7, Y: §6%d§7, Z: §6%d", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
 
             e.getBlockPlaced().setBlockData(Material.AIR.createBlockData());
         }
@@ -118,7 +126,7 @@ public class LandListener implements Listener {
         }
 
         if (!land_manager.hasAccess(player, loc)) {
-            player.sendMessage("§4Unable to break blocks in another player's land!");
+            player.sendMessage("§7Unable to break blocks in §canother player's§7 land!");
             e.setCancelled(true);
             return;
         }
@@ -142,7 +150,7 @@ public class LandListener implements Listener {
         }
 
         if (!land_manager.hasAccess(player, loc)) {
-            player.sendMessage("§4Unable to ignite blocks in another player's land!");
+            player.sendMessage("§7Unable to ignite blocks in §canother player's§7 land!");
             e.setCancelled(true);
             return;
         }
@@ -166,7 +174,7 @@ public class LandListener implements Listener {
         }
 
         if (!land_manager.hasAccess(player, loc)) {
-            player.sendMessage("§4Unable to change signs in another player's land!");
+            player.sendMessage("§7Unable to change signs in §canother player's§7 land!");
             e.setCancelled(true);
             return;
         }
@@ -191,7 +199,7 @@ public class LandListener implements Listener {
 
         if (block.getState() instanceof org.bukkit.block.Container) {
             if (!land_manager.hasAccess(player, loc)) {
-                player.sendMessage("§4Unable to open containers in another player's land!");
+                player.sendMessage("§7Unable to open containers in §canother player's§7 land!");
                 e.setCancelled(true);
                 return;
             }
@@ -201,7 +209,7 @@ public class LandListener implements Listener {
 
             if (block_name.contains("DOOR") || block_name.contains("GATE") || block_name.contains("TRAPDOOR") || block_name.contains("BUTTON") || block_name.contains("LEVER") || block_name.contains("PLATE")) {
                 if (!land_manager.hasAccess(player, loc)) {
-                    player.sendMessage("§4Unable to perform action in another player's land!!");
+                    player.sendMessage("§7Unable to perform action in §canother player's§7 land!");
                     e.setCancelled(true);
                     return;
                 }
@@ -230,7 +238,7 @@ public class LandListener implements Listener {
 
         if (entity instanceof org.bukkit.entity.ItemFrame || entity instanceof org.bukkit.entity.ArmorStand || entity instanceof org.bukkit.entity.Animals || entity instanceof org.bukkit.entity.Villager) {
             if (!land_manager.hasAccess(player, loc)) {
-                player.sendMessage("§4Unable to interact with entity in another player's land!");
+                player.sendMessage("§7Unable to interact with entity in §canother player's§7 land!");
                 e.setCancelled(true);
                 return;
             }
@@ -255,7 +263,7 @@ public class LandListener implements Listener {
         }
 
         if (!land_manager.hasAccess(player, loc)) {
-            player.sendMessage("§4Unable to enter a bed in another player's land!");
+            player.sendMessage("§7Unable to enter a bed in §canother player's§7 land!");
             e.setCancelled(true);
             return;
         }
@@ -279,7 +287,7 @@ public class LandListener implements Listener {
         }
 
         if (!land_manager.hasAccess(player, loc)) {
-            player.sendMessage("§4Unable to empty a bucket in another player's land!");
+            player.sendMessage("§7Unable to empty a bucket in §canother player's§7 land!");
             e.setCancelled(true);
             return;
         }
@@ -300,7 +308,7 @@ public class LandListener implements Listener {
         }
 
         if (!land_manager.hasAccess(player, loc)) {
-            player.sendMessage("§4Unable to fill a bucket in another player's land!");
+            player.sendMessage("§7Unable to fill a bucket in §canother player's§7 land!");
             e.setCancelled(true);
             return;
         }
@@ -321,104 +329,71 @@ public class LandListener implements Listener {
         }
 
         if (!land_manager.hasAccess(player, loc)) {
-            player.sendMessage("§4Unable to manipulate armor stand in another player's land!");
+            player.sendMessage("§7Unable to manipulate armor stand in §canother player's§7 land!");
             e.setCancelled(true);
             return;
         }
     }
 
-    @EventHandler 
+    @EventHandler
     public void onMove(PlayerMoveEvent e) {
-        Player player = e.getPlayer();
+        if (e.getTo() == null) {
+            return;
+        }
+        handleLandChange(e.getPlayer(), e.getFrom(), e.getTo());
+    }
 
-        // Get land
-        Land before = land_manager.getLandByLocation(e.getFrom());
-        Land after = land_manager.getLandByLocation(e.getTo());
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent e) {
+        if (e.getTo() == null) {
+            return;
+        }
+        handleLandChange(e.getPlayer(), e.getFrom(), e.getTo());
+    }
+
+    // Sends enter/leave messages when the player moves between land groups (not between lands of the same group)
+    private void handleLandChange(Player player, Location from, Location to) {
+        Land before = land_manager.getLandByLocation(from);
+        Land after = land_manager.getLandByLocation(to);
+
+        LandGroup before_group = before == null ? null : land_manager.getGroup(before);
+        LandGroup after_group = after == null ? null : land_manager.getGroup(after);
+
+        if (Objects.equals(before_group, after_group) && (before == null) == (after == null)) {
+            return;
+        }
 
         // Entering
-        if (after != null && after != before) {
-            // Get owner
-            String owner_name = Bukkit.getOfflinePlayer(after.getOwner()).getName();
-
-            // Get colour code to display
-            String colour_code;
-            if (after.isOwner(player.getUniqueId())) {
-                colour_code = "§6";
-            } else if (after.isTrusted(player.getUniqueId())) {
-                colour_code = "§b";
-            } else {
-                colour_code = "§c";
-            }
-
-            player.sendMessage("§7You have entered the land of " + colour_code + owner_name);
+        if (after != null && !Objects.equals(before_group, after_group)) {
+            player.sendMessage("§7You have entered " + describeLand(player, after));
             return;
         }
 
         // Leaving
-        if (after == null && after != before) {
-            // Get owner
-            String owner_name = Bukkit.getOfflinePlayer(before.getOwner()).getName();
-
-            // Get colour code to display
-            String colour_code;
-            if (before.isOwner(player.getUniqueId())) {
-                colour_code = "§6";
-            } else if (before.isTrusted(player.getUniqueId())) {
-                colour_code = "§b";
-            } else {
-                colour_code = "§c";
-            }
-
-            player.sendMessage("§7You have left the land of " + colour_code + owner_name);
-            return;
+        if (after == null && before != null) {
+            player.sendMessage("§7You have left " + describeLand(player, before));
         }
     }
 
-    @EventHandler 
-    public void onTeleport(PlayerTeleportEvent e) {
-        Player player = e.getPlayer();
+    private String describeLand(Player player, Land land) {
+        String owner_name = Bukkit.getOfflinePlayer(land.getOwner()).getName();
 
-        // Get land
-        Land before = land_manager.getLandByLocation(e.getFrom());
-        Land after = land_manager.getLandByLocation(e.getTo());
-
-        // Entering
-        if (after != null && after != before) {
-            // Get owner
-            String owner_name = Bukkit.getOfflinePlayer(after.getOwner()).getName();
-
-            // Get colour code to display
-            String colour_code;
-            if (after.isOwner(player.getUniqueId())) {
-                colour_code = "§6";
-            } else if (after.isTrusted(player.getUniqueId())) {
-                colour_code = "§b";
-            } else {
-                colour_code = "§c";
-            }
-
-            player.sendMessage("§7You have entered the land of " + colour_code + owner_name);
-            return;
+        // Get colour code to display
+        String colour_code;
+        if (land.isOwner(player.getUniqueId())) {
+            colour_code = "§6";
+        } else if (land_manager.isTrusted(land, player.getUniqueId())) {
+            colour_code = "§b";
+        } else {
+            colour_code = "§c";
         }
 
-        // Leaving
-        if (after == null && after != before) {
-            // Get owner
-            String owner_name = Bukkit.getOfflinePlayer(before.getOwner()).getName();
-
-            // Get colour code to display
-            String colour_code;
-            if (before.isOwner(player.getUniqueId())) {
-                colour_code = "§6";
-            } else if (before.isTrusted(player.getUniqueId())) {
-                colour_code = "§b";
-            } else {
-                colour_code = "§c";
-            }
-
-            player.sendMessage("§7You have left the land of " + colour_code + owner_name);
-            return;
+        String result = "the land of " + colour_code + owner_name;
+        LandGroup group = land_manager.getGroup(land);
+        if (group != null && group.hasName()) {
+            result += " §8(§7" + group.getName() + "§8)";
         }
+        return result;
     }
 
     @EventHandler 
@@ -436,7 +411,7 @@ public class LandListener implements Listener {
         }
 
         if (!land_manager.hasAccess(player, loc)) {
-            player.sendMessage("§4Unable to place hanging items in another player's land!");
+            player.sendMessage("§7Unable to place hanging items in §canother player's§7 land!");
             e.setCancelled(true);
             return;
         }
@@ -451,7 +426,7 @@ public class LandListener implements Listener {
             }
 
             if (!land_manager.hasAccess(player, loc)) {
-                player.sendMessage("§4Unable to break items in another player's land!");
+                player.sendMessage("§7Unable to break items in §canother player's§7 land!");
                 e.setCancelled(true);
                 return;
             }
@@ -472,7 +447,7 @@ public class LandListener implements Listener {
             }
 
             if (!land_manager.hasAccess(player, loc)) {
-                player.sendMessage("§4Unable to damage entity in another player's land!");
+                player.sendMessage("§7Unable to damage entity in §canother player's§7 land!");
                 e.setCancelled(true);
                 return;
             }
@@ -488,7 +463,7 @@ public class LandListener implements Listener {
             }
 
             if (!land_manager.hasAccess(player, loc)) {
-                player.sendMessage("§4Unable to damage entity in another player's land!");
+                player.sendMessage("§7Unable to damage entity in §canother player's§7 land!");
                 e.setCancelled(true);
                 return;
             }
