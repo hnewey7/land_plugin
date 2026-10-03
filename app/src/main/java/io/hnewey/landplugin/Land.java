@@ -1,9 +1,6 @@
 package io.hnewey.landplugin;
 
 import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.Chunk;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -14,12 +11,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Land {
-    public Land(Player owner, Chunk chunk) {
+    Land(Player owner, ChunkKey chunk) {
         this.owner = owner.getUniqueId();
-        this.chunks.add(chunk);
+        this.chunks_keys.add(chunk);
     }
 
-    public Land(File file) {
+    Land(File file) {
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
 
         this.owner = UUID.fromString(config.getString("owner"));
@@ -28,23 +25,23 @@ public class Land {
         List<String> trusted = config.getStringList("trusted");
         this.trusted = trusted.stream().map(t -> UUID.fromString(t)).collect(Collectors.toSet());
 
-        this.chunks = loadChunks(config);
+        this.chunks_keys = loadChunks(config);
     }
 
     public final Player getOwner() { return Bukkit.getPlayer(owner); }
-    public final Set<Chunk> getSets() { return chunks; }
+    public final Set<ChunkKey> getChunks_keys() { return chunks_keys; }
 
     public final String getName() { return name; }
     public void setName(String name) {
         this.name = name;
     }
 
-    public void addChunk(Chunk chunk) {
-        chunks.add(chunk);
+    public void addChunk(ChunkKey chunk) {
+        chunks_keys.add(chunk);
     }
 
-    public void removeChunk(Chunk chunk) {
-        chunks.remove(chunk);
+    public void removeChunk(ChunkKey chunk) {
+        chunks_keys.remove(chunk);
     }
 
     public void addPlayer(Player player) {
@@ -62,7 +59,7 @@ public class Land {
         config.set("trusted", this.trusted.toString());
         config.set("name", this.name);
 
-        saveChunks(config, chunks);
+        saveChunks(config, chunks_keys);
 
         try {
             config.save(file);
@@ -71,46 +68,37 @@ public class Land {
         }
     }
 
-    private Set<Chunk> loadChunks(FileConfiguration config) {
-        Set<Chunk> chunk_set = new HashSet<Chunk>();
+    private Set<ChunkKey> loadChunks(FileConfiguration config) {
+        Set<ChunkKey> chunk_set = new HashSet<ChunkKey>();
         for (Map<?, ?> entry : config.getMapList("chunks")) {
-            World world = Bukkit.getWorld((String) entry.get("world"));
-            if (world == null) {
-                continue;
-            }
-
+            // Get details
+            String world_name = (String) entry.get("world");
             int x = (int) entry.get("x");
-            int y = (int) entry.get("y");
             int z = (int) entry.get("z");
-            Block block = world.getBlockAt(x, y, z);
-            if (block == null) {
-                continue;
-            }
-
-            chunk_set.add(block.getChunk());
+            // Create and add chunk key
+            ChunkKey ck = new ChunkKey(world_name, x, z);
+            chunk_set.add(ck);
         }
         return chunk_set;
     }
 
-    private void saveChunks(FileConfiguration config, Set<Chunk> chunks) {
+    private void saveChunks(FileConfiguration config, Set<ChunkKey> chunk_keys) {
         List<Map<String, Object>> chunk_list = new ArrayList<>();
-        for (Chunk c : chunks) {
+        for (ChunkKey ck : chunk_keys) {
             Map<String, Object> map = new LinkedHashMap<>();
             // Set world
-            map.put("world", c.getWorld().getName());
-            // Get block
-            Block b = c.getBlock(0, 0, 0);
-            map.put("x", b.getX());
-            map.put("y", b.getY());
-            map.put("z", b.getZ());
+            map.put("world", ck.world());
+            // Set chunk
+            map.put("x", ck.x());
+            map.put("z", ck.z());
             chunk_list.add(map);
         }
-        config.set("chunks", chunk_list);
+        config.set("chunk_keys", chunk_list);
     }
 
     private final UUID owner;
 
-    private Set<Chunk> chunks = new HashSet<Chunk>();
+    private Set<ChunkKey> chunks_keys = new HashSet<ChunkKey>();
     private Set<UUID> trusted = new HashSet<UUID>();
     private String name;
 }
