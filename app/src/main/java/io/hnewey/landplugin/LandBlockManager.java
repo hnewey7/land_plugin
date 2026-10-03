@@ -15,7 +15,7 @@ public class LandBlockManager {
     private ItemStack block;
     private NamespacedKey key;
 
-    public LandBlockManager(LandPlugin plugin) {
+    LandBlockManager(LandPlugin plugin) {
         this.plugin = plugin;
         this.key = new NamespacedKey(this.plugin, "land_block");
 
