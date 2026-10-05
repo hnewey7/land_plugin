@@ -14,6 +14,12 @@ public class LandManager {
             land_folder.mkdirs();
         }
 
+        List<String> worlds = plugin.getConfig().getStringList("enabled_worlds");
+        if (worlds.size() < 1) {
+            worlds.add("world");
+        }
+        this.enabled_worlds = worlds;
+
         loadAllLand();
     }
 
@@ -69,6 +75,7 @@ public class LandManager {
                     land_by_chunk.put(other_ck, selected);
                 }
                 all_land.remove(other);
+                land_by_owner.get(owner.getUniqueId()).remove(other);
                 deleteLandFile(other);
             }
             saveLand(selected);
@@ -86,6 +93,9 @@ public class LandManager {
             return false;
         }
 
+        // Get land owner
+        UUID owner_id = land.getOwnerID();
+
         // Remove chunk key from map and land
         land_by_chunk.remove(ck);
         land.removeChunk(ck);
@@ -94,6 +104,13 @@ public class LandManager {
         List<Set<ChunkKey>> components = findComponents(land.getChunkKeys());
         if (components.size() == 0) {
             all_land.remove(land);
+            
+            if (land_by_owner.get(owner_id).size() == 1) {
+                land_by_owner.remove(owner_id);
+            } else {
+                land_by_owner.get(owner_id).remove(land);
+            }
+
             deleteLandFile(land);
             return true;
         } else if (components.size() == 1) {
@@ -110,6 +127,7 @@ public class LandManager {
                 String new_name = land.getName().isBlank() ? "" : land.getName() + String.format("#%d", i);
                 Land new_land = new Land(land.getOwnerID(), new_name, land.getWorld(), components.get(i));
                 all_land.add(new_land);
+                land_by_owner.computeIfAbsent(owner_id, k -> new HashSet<>()).add(new_land);
 
                 for (ChunkKey component_ck : components.get(i)) {
                     land_by_chunk.put(component_ck, new_land);
@@ -120,10 +138,50 @@ public class LandManager {
         }
     }
 
+    public Land getLand(ChunkKey ck) {
+        return land_by_chunk.get(ck);
+    }
+
+    public Set<Land> getLandByOwner(Player owner) {
+        return land_by_owner.get(owner.getUniqueId());
+    }
+
     public void saveAllLand() {
         for (Land l : all_land) {
             saveLand(l);
         }
+    }
+
+    public boolean hasAccess(Player player, Location loc) {
+        ChunkKey ck = generateChunkKey(loc);
+        Land l = getLand(ck);
+        if (l == null) {
+            return true;
+        }
+        return l.isOwner(player) || LandPlugin.getTrustedPlayerManager().isTrusted(l.getOwner(), player);
+    }
+
+    public boolean isOwner(Player player, Location loc) {
+        ChunkKey ck = generateChunkKey(loc);
+        Land l = getLand(ck);
+        if (l == null) {
+            return false;
+        }
+        return l.isOwner(player);
+    }
+
+    public boolean isWorldEnabled(World world) {
+        return this.enabled_worlds.contains(world.getName());
+    }
+
+    public boolean isForeignLand(Player player, Location loc) {
+        ChunkKey ck = generateChunkKey(loc);
+        Land l = land_by_chunk.get(ck);
+        if (l == null) {
+            return false;
+        }
+
+        return !l.isOwner(player);
     }
 
     private void loadAllLand() {
@@ -148,6 +206,7 @@ public class LandManager {
             return;
         }
         all_land.add(l);
+        land_by_owner.computeIfAbsent(l.getOwnerID(), k -> new HashSet<>()).add(l);
         for (ChunkKey ck : l.getChunkKeys()) {
             land_by_chunk.put(ck, l);
         }
@@ -157,6 +216,7 @@ public class LandManager {
         ChunkKey ck = generateChunkKey(loc);
         Land land = new Land(owner, ck);
         land_by_chunk.put(ck, land);
+        land_by_owner.computeIfAbsent(owner.getUniqueId(), k -> new HashSet<>()).add(land);
         all_land.add(land);
         saveLand(land);
     }
@@ -230,6 +290,9 @@ public class LandManager {
 
     private File land_folder;
 
+    private final List<String> enabled_worlds;
+
     private Map<ChunkKey, Land> land_by_chunk = new HashMap<ChunkKey, Land>();
+    private Map<UUID, Set<Land>> land_by_owner = new HashMap<UUID, Set<Land>>();
     private Set<Land> all_land = new HashSet<Land>();
 }

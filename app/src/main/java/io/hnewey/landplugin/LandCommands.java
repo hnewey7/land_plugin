@@ -10,6 +10,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.StringUtil;
 
+import com.sk89q.worldedit.world.chunk.Chunk;
+
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -17,13 +19,15 @@ import java.util.regex.PatternSyntaxException;
 public class LandCommands implements CommandExecutor, TabCompleter {
     private final LandPlugin plugin;
     private final LandManager land_manager;
+    private final TrustedPlayerManager trusted_player_manager;
     private final LandBlockManager block_manager;
     private final List<Pattern> name_blacklist;
 
-    LandCommands(LandPlugin plugin, LandManager land_manager, LandBlockManager block_manager) {
+    LandCommands(LandPlugin plugin, LandManager land_manager, TrustedPlayerManager trusted_player_manager, LandBlockManager block_manager) {
         this.plugin = plugin;
         this.land_manager = land_manager;
         this.block_manager = block_manager;
+        this.trusted_player_manager = trusted_player_manager;
         this.name_blacklist = loadNameBlacklist();
     }
 
@@ -71,36 +75,22 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                         return true;
                     }
 
-                    // Get land the player is in
-                    Land land = land_manager.getLandByLocation(player.getLocation());
-                    if (land == null || !land.isOwner(player.getUniqueId())) {
-                        player.sendMessage("§7You must be inside §cyour own§7 land to add another player.");
-                        return true;
-                    }
-
-                    LandGroup group = land_manager.getGroup(land);
-                    if (group == null) {
-                        player.sendMessage("§cUnable to find§7 the group for this land.");
-                        return true;
-                    }
-                    
                     // Get player to add
                     String player_name = args[1];
                     Player other = Bukkit.getPlayer(player_name);
 
                     if (other == null) {
-                        player.sendMessage("§7You must provide a §cvalid player§7 to add to your land.");
+                        player.sendMessage("§7You must provide a §cvalid online player§7 to add to your land.");
                         return true;
-                    } else if (land.isOwner(other.getUniqueId())) {
+                    } else if (other.getUniqueId() == player.getUniqueId()) {
                         player.sendMessage("§7You cannot add §cyourself§7 to your own land.");
                         return true;
-                    } else if (group.isTrusted(other.getUniqueId())) {
+                    } else if (trusted_player_manager.isTrusted(player, other)) {
                         player.sendMessage("§7The player is §calready added§7 to your land.");
                         return true;
                     }
 
-                    group.addTrusted(other.getUniqueId());
-                    land_manager.saveGroup(group);
+                    trusted_player_manager.addTrusted(player, other);
                     player.sendMessage("§7The player has been §6added§7 to your land.");
 
                     return true;
@@ -112,36 +102,22 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                         return true;
                     }
 
-                    // Get land the player is in
-                    Land land = land_manager.getLandByLocation(player.getLocation());
-                    if (land == null || !land.isOwner(player.getUniqueId())) {
-                        player.sendMessage("§7You must be inside §cyour own§7 land to remove a player.");
-                        return true;
-                    }
-
-                    LandGroup group = land_manager.getGroup(land);
-                    if (group == null) {
-                        player.sendMessage("§cUnable to find§7 the group for this land.");
-                        return true;
-                    }
-
                     // Get player to remove
                     String player_name = args[1];
                     Player other = Bukkit.getPlayer(player_name);
 
                     if (other == null) {
-                        player.sendMessage("§7You must provide a §cvalid player§7 to remove from your land.");
+                        player.sendMessage("§7You must provide a §cvalid online player§7 to remove from your land.");
                         return true;
-                    } else if (land.isOwner(other.getUniqueId())) {
+                    } else if (other.getUniqueId() == player.getUniqueId()) {
                         player.sendMessage("§7You cannot remove §cyourself§7 from your own land.");
                         return true;
-                    } else if (!group.isTrusted(other.getUniqueId())) {
+                    } else if (!trusted_player_manager.isTrusted(player, other)) {
                         player.sendMessage("§7The player is §calready removed§7 from your land.");
                         return true;
                     }
 
-                    group.removeTrusted(other.getUniqueId());
-                    land_manager.saveGroup(group);
+                    trusted_player_manager.removeTrusted(player, other);
                     player.sendMessage("§7The player has been §6removed§7 from your land.");
 
                     return true;
@@ -171,8 +147,11 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                         return true;
                     }
 
-                    Land land = land_manager.getLandByLocation(loc);
-                    if (land == null || !land.isOwner(player.getUniqueId())) {
+                    // Get chunk key for location
+                    ChunkKey ck = LandManager.generateChunkKey(loc);
+
+                    Land land = land_manager.getLand(ck);
+                    if (land == null || !land.isOwner(player)) {
                         player.sendMessage("§7You must be in §cyour own§7 land to set the name!");
                         return true;
                     }
@@ -183,63 +162,49 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                         return true;
                     }
 
-                    LandGroup group = land_manager.getGroup(land);
-                    if (group == null) {
-                        player.sendMessage("§cUnable to find§7 the group for this land.");
-                        return true;
-                    }
-
-                    group.setName(args[1]);
-                    land_manager.saveGroup(group);
+                    land.setName(args[1]);
                     player.sendMessage("§7The land's name has been set to §6" + args[1]);
                     return true;
                 }
                 case "list": {
                     // Get land of player
-                    List<LandGroup> groups = land_manager.getGroupsByOwner(player.getUniqueId());
-                    if (groups.isEmpty()) {
+                    Set<Land> owned_land = land_manager.getLandByOwner(player);
+                    if (owned_land.isEmpty()) {
                         player.sendMessage("§7You do not own §cany land§7.");
                         return true;
                     }
                     
-                    player.sendMessage("§6Land:");
-                    int index = 1;
-                    for (LandGroup group : groups) {
-                        List<Land> lands = land_manager.getLandInGroup(group);
-                        if (lands.isEmpty()) {
-                            continue;
+                    player.sendMessage(plugin.getPrefix());
+                    for (Land l : owned_land) {
+                        Location centre = l.getCentre();
+                        if (centre == null) {
+                            continue; // World not loaded
                         }
-
                         player.sendMessage(String.format(
-                            "§8%d. §6%s §8- §7Plots: §6%d",
-                            index++,
-                            land_manager.getGroupName(lands.get(0)),
-                            lands.size()
-                        ));
-
-                        for (Land l : lands) {
-                            Location centre = l.getCentre();
-                            player.sendMessage(String.format(
-                                "   §8- §7X: §6%d§7, Y: §6%d§7, Z: §6%d",
+                                "   §8- §6%s §7X: §6%d§7, Y: §6%d§7, Z: §6%d",
+                                l.getName(),
                                 centre.getBlockX(),
                                 centre.getBlockY(),
                                 centre.getBlockZ()
-                            ));
-                        }
+                        ));
                     }
 
                     return true;
                 }
                 case "delete": {
+                    // Get chunk key by location
+                    ChunkKey ck = LandManager.generateChunkKey(player.getLocation());
+
                     // Get land
-                    Land land = land_manager.getLandByLocation(player.getLocation());
-                    if (land == null || !land.isOwner(player.getUniqueId())) {
+                    Land land = land_manager.getLand(ck);
+                    if (land == null || !land.isOwner(player)) {
                         player.sendMessage("§7You must be inside §cyour own§7 land to delete it.");
                         return true;
                     }
 
-                    land_manager.deleteLand(land);
-                    player.sendMessage("§7The land has been §6deleted§7.");
+                    if (land_manager.removeLand(player.getLocation())) {
+                        player.sendMessage("§7The land has been §6deleted§7.");
+                    }
 
                     return true;
                 }
@@ -307,14 +272,14 @@ public class LandCommands implements CommandExecutor, TabCompleter {
         String prefix = plugin.getPrefix();
         player.sendMessage(prefix + "§6Available commands:");
 
-        player.sendMessage("§6/land add §b<player> §8- §7Trust a player in your land.");
-        player.sendMessage("§6/land remove §b<player> §8- §7Untrust a player in your land.");
-        player.sendMessage("§6/land name §6<name> §8- §7Set the name of your land.");
-        player.sendMessage("§6/land list §8- §7Show all your land.");
-        player.sendMessage("§6/land delete §8- §7Delete the land you are inside.");
+        player.sendMessage("§7/land add §b<player> §8- Trust a player to your land.");
+        player.sendMessage("§7/land remove §b<player> §8- Untrust a player from your land.");
+        player.sendMessage("§7/land name §6<name> §8- Set the name of your land.");
+        player.sendMessage("§7/land list §8- Show all your land.");
+        player.sendMessage("§7/land delete §8- Delete the land you are inside.");
 
         if (player.hasPermission("land.block")) {
-            player.sendMessage("§6/land block §8- §7Get a land block for claiming land.");
+            player.sendMessage("§7/land block §8- Get a land block for claiming land.");
         }
     }
 }

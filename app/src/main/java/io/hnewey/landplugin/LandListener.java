@@ -36,11 +36,13 @@ public class LandListener implements Listener {
     private final LandPlugin plugin;
     private final LandManager land_manager;
     private final LandBlockManager block_manager;
+    private final TrustedPlayerManager trusted_player_manager;
 
-    public LandListener(LandPlugin plugin, LandManager land_manager, LandBlockManager block_manager) {
+    LandListener(LandPlugin plugin, LandManager land_manager, TrustedPlayerManager trusted_player_manager, LandBlockManager block_manager) {
         this.plugin = plugin;
         this.land_manager = land_manager;
         this.block_manager = block_manager;
+        this.trusted_player_manager = trusted_player_manager;
     }
 
     @EventHandler 
@@ -83,8 +85,14 @@ public class LandListener implements Listener {
                 return;
             }
 
-            if (plugin.getWorldGuardEnabled() && WorldGuardHook.isOverlappingWorldRegion(loc, land_manager.getLandSize())) {
+            if (plugin.getWorldGuardEnabled() && WorldGuardHook.isOverlappingWorldRegion(LandManager.generateChunkKey(loc))) {
                 player.sendMessage("§7Land claim §cnot allowed§7 to overlap this region!");
+                e.setCancelled(true);
+                return;
+            }
+
+            if (land_manager.isOwner(player, loc)) {
+                player.sendMessage("§7Unable to claim land you §calready own§7!");
                 e.setCancelled(true);
                 return;
             }
@@ -95,13 +103,7 @@ public class LandListener implements Listener {
                 return;
             }
 
-            if (land_manager.isOverlappingForeignLand(player, loc)) {
-                player.sendMessage("§7Unable to claim land overlapping §canother player's§7 land!");
-                e.setCancelled(true);
-                return;
-            }
-
-            this.land_manager.createLand(player.getUniqueId(), loc);
+            this.land_manager.addLand(player, loc);
             player.sendMessage("§7You have claimed land at: " + String.format("§7X: §6%d§7, Y: §6%d§7, Z: §6%d", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
 
             e.getBlockPlaced().setBlockData(Material.AIR.createBlockData());
@@ -353,18 +355,11 @@ public class LandListener implements Listener {
 
     // Sends enter/leave messages when the player moves between land groups (not between lands of the same group)
     private void handleLandChange(Player player, Location from, Location to) {
-        Land before = land_manager.getLandByLocation(from);
-        Land after = land_manager.getLandByLocation(to);
-
-        LandGroup before_group = before == null ? null : land_manager.getGroup(before);
-        LandGroup after_group = after == null ? null : land_manager.getGroup(after);
-
-        if (Objects.equals(before_group, after_group) && (before == null) == (after == null)) {
-            return;
-        }
+        Land before = land_manager.getLand(LandManager.generateChunkKey(from));
+        Land after = land_manager.getLand(LandManager.generateChunkKey(to));
 
         // Entering
-        if (after != null && !Objects.equals(before_group, after_group)) {
+        if (after != null && !Objects.equals(before, after)) {
             player.sendMessage("§7You have entered " + describeLand(player, after));
             return;
         }
@@ -376,23 +371,19 @@ public class LandListener implements Listener {
     }
 
     private String describeLand(Player player, Land land) {
-        String owner_name = Bukkit.getOfflinePlayer(land.getOwner()).getName();
+        String owner_name = Bukkit.getOfflinePlayer(land.getOwnerID()).getName();
 
         // Get colour code to display
         String colour_code;
-        if (land.isOwner(player.getUniqueId())) {
+        if (land.isOwner(player)) {
             colour_code = "§6";
-        } else if (land_manager.isTrusted(land, player.getUniqueId())) {
+        } else if (trusted_player_manager.isTrusted(land.getOwner(), player)) {
             colour_code = "§b";
         } else {
             colour_code = "§c";
         }
 
         String result = "the land of " + colour_code + owner_name;
-        LandGroup group = land_manager.getGroup(land);
-        if (group != null && group.hasName()) {
-            result += " §8(§7" + group.getName() + "§8)";
-        }
         return result;
     }
 

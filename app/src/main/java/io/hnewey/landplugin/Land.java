@@ -1,6 +1,7 @@
 package io.hnewey.landplugin;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -51,6 +52,25 @@ public class Land {
     public final Set<ChunkKey> getChunkKeys() { return chunks_keys; }
     public void setChunkKeys(Set<ChunkKey> chunk_keys) {
         this.chunks_keys = new HashSet<ChunkKey>(chunk_keys);
+    }
+
+    /**
+     * Centre of the land, taken as the middle of the claimed chunk closest to the
+     * average chunk position, so it is always inside the land even if it is oddly shaped.
+     * Returns null if the land has no chunks or its world isn't loaded.
+     */
+    public Location getCentre() {
+        if (chunks_keys.isEmpty()) {
+            return null;
+        }
+
+        double avg_x = chunks_keys.stream().mapToInt(ChunkKey::x).average().orElse(0);
+        double avg_z = chunks_keys.stream().mapToInt(ChunkKey::z).average().orElse(0);
+
+        ChunkKey closest = Collections.min(chunks_keys, Comparator.comparingDouble(
+                ck -> Math.pow(ck.x() - avg_x, 2) + Math.pow(ck.z() - avg_z, 2)));
+
+        return closest.getCentre();
     }
 
     public void addChunk(ChunkKey chunk) {

@@ -1,5 +1,6 @@
 package io.hnewey.landplugin;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -19,8 +20,8 @@ public class WorldGuardHook {
         return query.getApplicableRegions(BukkitAdapter.adapt(loc)).size() > 0;
     }
 
-    public static boolean isOverlappingWorldRegion(Location loc, int size) {
-        World world = loc.getWorld();
+    public static boolean isOverlappingWorldRegion(ChunkKey ck) {
+        World world = Bukkit.getWorld(ck.world());
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
         RegionManager region_manager = container.get(BukkitAdapter.adapt(world));
 
@@ -28,8 +29,8 @@ public class WorldGuardHook {
             return false;
         }
 
-        BlockVector3 min = BlockVector3.at(loc.getBlockX() - size, world.getMinHeight(), loc.getBlockZ() - size);
-        BlockVector3 max = BlockVector3.at(loc.getBlockX() + size, world.getMaxHeight(), loc.getBlockZ() + size);
+        BlockVector3 min = BlockVector3.at(ck.x() << 4, world.getMinHeight(), ck.z() << 4);
+        BlockVector3 max = BlockVector3.at((ck.x() << 4) + 15, world.getMaxHeight(), (ck.z() << 4) + 15);
         ProtectedRegion query_region = new ProtectedCuboidRegion("__land_overlap_query__", min, max);
 
         return !region_manager.getApplicableRegions(query_region).getRegions().isEmpty();
