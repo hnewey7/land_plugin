@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import com.sk89q.worldedit.world.chunk.Chunk;
+
 import java.io.File;
 import java.util.*;
 
@@ -158,7 +160,7 @@ public class LandManager {
         if (l == null) {
             return true;
         }
-        return l.isOwner(player) || LandPlugin.getTrustedPlayerManager().isTrusted(l.getOwner(), player);
+        return l.isOwner(player) || LandPlugin.getTrustedPlayerManager().isTrusted(l.getOwnerID(), player);
     }
 
     public boolean isOwner(Player player, Location loc) {
@@ -182,6 +184,33 @@ public class LandManager {
         }
 
         return !l.isOwner(player);
+    }
+
+    public List<String> generateLandMap(Player player, int radius_x, int radius_z) {
+        ChunkKey centre = generateChunkKey(player.getLocation());
+        List<String> result = new ArrayList<String>();
+
+        for (int dz = -radius_z; dz <= radius_z; dz++) {
+            StringBuilder row = new StringBuilder();
+            for (int dx = -radius_x; dx <= radius_x; dx++) {
+                ChunkKey ck = new ChunkKey(centre.world(), centre.x() + dx, centre.z() + dz);
+                Land land = getLand(ck);
+                
+                if (dx == 0 && dz == 0) {
+                    row.append("§f+");
+                } else if (land == null) {
+                    row.append("§8\\");
+                } else if (land.isOwner(player)) {
+                    row.append("§6\\");
+                } else if (LandPlugin.getTrustedPlayerManager().isTrusted(land.getOwnerID(), player)) {
+                    row.append("§b\\");
+                } else {
+                    row.append("§c\\");
+                }
+            }
+            result.add(row.toString());
+        }
+        return result;
     }
 
     private void loadAllLand() {

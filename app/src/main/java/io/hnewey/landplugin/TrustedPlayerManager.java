@@ -74,7 +74,12 @@ public class TrustedPlayerManager {
     }
 
     public boolean isTrusted(Player owner, Player player) {
-        Set<UUID> trusted = trusted_players.get(owner.getUniqueId());
+        return isTrusted(owner.getUniqueId(), player);
+    }
+
+    // Takes the owner's UUID so it works when the owner is offline
+    public boolean isTrusted(UUID owner_id, Player player) {
+        Set<UUID> trusted = trusted_players.get(owner_id);
         if (trusted == null) {
             return false;
         }

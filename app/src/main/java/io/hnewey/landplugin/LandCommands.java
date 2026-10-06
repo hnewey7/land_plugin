@@ -23,6 +23,12 @@ public class LandCommands implements CommandExecutor, TabCompleter {
     private final LandBlockManager block_manager;
     private final List<Pattern> name_blacklist;
 
+    // Map size in chunks either side of the player: 29 columns x 9 rows fits the default chat
+    private static final int MAP_RADIUS_X = 16;
+    private static final int MAP_RADIUS_Z = 4;
+    // Struck-through spaces, about as wide as the map rows (29 columns)
+    private static final String MAP_DIVIDER = "§8§m" + " ".repeat(49);
+
     LandCommands(LandPlugin plugin, LandManager land_manager, TrustedPlayerManager trusted_player_manager, LandBlockManager block_manager) {
         this.plugin = plugin;
         this.land_manager = land_manager;
@@ -68,6 +74,27 @@ public class LandCommands implements CommandExecutor, TabCompleter {
             String sub = args[0].toLowerCase(Locale.ROOT);
 
             switch(sub) {
+                case "map": {
+                    Location loc = player.getLocation();
+
+                    // Header with the block the player is standing on
+                    player.sendMessage(String.format(
+                            "%s§7Location X: §6%d§7, Y: §6%d§7, Z: §6%d",
+                            plugin.getPrefix(),
+                            loc.getBlockX(),
+                            loc.getBlockY(),
+                            loc.getBlockZ()
+                    ));
+
+                    // Map rows, sized to fit the default chat window
+                    for (String row : land_manager.generateLandMap(player, MAP_RADIUS_X, MAP_RADIUS_Z)) {
+                        player.sendMessage(row);
+                    }
+
+                    // Line to break up the bottom of the map
+                    player.sendMessage(MAP_DIVIDER);
+                    return true;
+                }
                 case "add": {
                     // Check if other player provided
                     if (args.length < 2) {
@@ -241,7 +268,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
     @Override 
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            List<String> base = new ArrayList<>(Arrays.asList("add", "remove", "name", "list", "delete"));
+            List<String> base = new ArrayList<>(Arrays.asList("map", "add", "remove", "name", "list", "delete"));
 
             if (sender.hasPermission("land.block")) {
                 base.add("block");
@@ -272,6 +299,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
         String prefix = plugin.getPrefix();
         player.sendMessage(prefix + "§6Available commands:");
 
+        player.sendMessage("§7/land map §8- Show the land surrounding you.");
         player.sendMessage("§7/land add §b<player> §8- Trust a player to your land.");
         player.sendMessage("§7/land remove §b<player> §8- Untrust a player from your land.");
         player.sendMessage("§7/land name §6<name> §8- Set the name of your land.");

@@ -8,7 +8,7 @@ softdepend: [WorldGuard]
 
 commands:
   land:
-    description: Manages land plugin (e.g. getblock, add, remove, and delete)
+    description: Manages land plugin (e.g. map, add, remove, and delete)
     usage: /land <subcommand>
     permission: land.use
 
