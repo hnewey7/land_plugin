@@ -4,8 +4,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import com.sk89q.worldedit.world.chunk.Chunk;
-
 import java.io.File;
 import java.util.*;
 
@@ -146,6 +144,21 @@ public class LandManager {
 
     public Set<Land> getLandByOwner(Player owner) {
         return land_by_owner.get(owner.getUniqueId());
+    }
+
+    public Set<Land> getLandInRadius(Location loc, int chunk_radius) {
+        ChunkKey ck = generateChunkKey(loc);
+
+        Set<Land> result = new HashSet<Land>();
+        for (int dz = ck.z() - chunk_radius; dz < ck.z() + chunk_radius; dz++) {
+            for (int dx = ck.x() - chunk_radius; dx < ck.x() + chunk_radius; dx++) {
+                Land l = land_by_chunk.get(new ChunkKey(ck.world(), dx, dz));
+                if (l != null) {
+                    result.add(l);
+                }
+            }
+        }
+        return result;
     }
 
     public void saveAllLand() {

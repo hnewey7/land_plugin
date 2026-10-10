@@ -7,6 +7,7 @@ public class LandPlugin extends JavaPlugin {
     private static LandManager land_manager;
     private static LandBlockManager block_manager;
     private static TrustedPlayerManager trusted_player_manager;
+    private static Visualisation visualisation;
 
     private boolean worldguard_enabled;
 
@@ -27,7 +28,10 @@ public class LandPlugin extends JavaPlugin {
         block_manager = new LandBlockManager(this);
         trusted_player_manager = new TrustedPlayerManager(this);
 
+        visualisation = new Visualisation(this, land_manager, trusted_player_manager);
+
         getServer().getPluginManager().registerEvents(new LandListener(this, land_manager, trusted_player_manager, block_manager), this);
+        getServer().getPluginManager().registerEvents(visualisation, this);
 
         worldguard_enabled = getServer().getPluginManager().getPlugin("WorldGuard") != null;
 
@@ -37,6 +41,10 @@ public class LandPlugin extends JavaPlugin {
 
     @Override 
     public void onDisable() {
+        if (visualisation != null) {
+            visualisation.shutdown();
+        }
+
         if (land_manager != null) {
             land_manager.saveAllLand();
         }

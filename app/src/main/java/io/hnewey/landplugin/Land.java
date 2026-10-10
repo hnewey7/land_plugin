@@ -43,6 +43,7 @@ public class Land {
     public final String getWorld() { return world; }
 
     public boolean isOwner(Player player) { return player.getUniqueId().equals(owner); } 
+    public boolean isOwner(UUID player_id) { return player_id.equals(owner); }
 
     public final String getName() { return name; }
     public void setName(String name) {
@@ -52,6 +53,7 @@ public class Land {
     public final Set<ChunkKey> getChunkKeys() { return chunks_keys; }
     public void setChunkKeys(Set<ChunkKey> chunk_keys) {
         this.chunks_keys = new HashSet<ChunkKey>(chunk_keys);
+        this.corner_cache = null;
     }
 
     /**
@@ -75,10 +77,12 @@ public class Land {
 
     public void addChunk(ChunkKey chunk) {
         chunks_keys.add(chunk);
+        corner_cache = null;
     }
 
     public void removeChunk(ChunkKey chunk) {
         chunks_keys.remove(chunk);
+        corner_cache = null;
     }
 
     public void saveLand(File file) {
@@ -98,6 +102,74 @@ public class Land {
         }
     }
 
+    // Corners are checked often by the visualisation, so only recalculate when the chunks change
+    public Set<ChunkCorner> getCorners() {
+        if (corner_cache == null) {
+            corner_cache = computeCorners();
+        }
+        return corner_cache;
+    }
+
+    private Set<ChunkCorner> computeCorners() {
+        Map<ChunkCorner, List<ChunkEdge>> corner_edge_map = new HashMap<ChunkCorner, List<ChunkEdge>>();
+        for (ChunkKey ck : chunks_keys) {
+            List<ChunkEdge> chunk_edges = ck.getEdges();
+            for (ChunkEdge ce : chunk_edges) {
+                // Corners may not be in the map yet, so these can be null
+                List<ChunkEdge> start_edges = corner_edge_map.get(ce.start);
+                List<ChunkEdge> end_edges = corner_edge_map.get(ce.end);
+
+                // Remove if already contains edge (it is shared with another chunk, so not a boundary)
+                if (start_edges != null && end_edges != null && start_edges.contains(ce) && end_edges.contains(ce)) {
+                    start_edges.remove(ce);
+                    if (start_edges.isEmpty()) {
+                        corner_edge_map.remove(ce.start);
+                    }
+                    end_edges.remove(ce);
+                    if (end_edges.isEmpty()) {
+                        corner_edge_map.remove(ce.end);
+                    }
+                    // Edge cancelled out, don't add it again
+                    continue;
+                }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+
+                // Add edges to map
+                corner_edge_map.computeIfAbsent(ce.start, k -> new ArrayList<ChunkEdge>()).add(ce);
+                corner_edge_map.computeIfAbsent(ce.end, k -> new ArrayList<ChunkEdge>()).add(ce);
+            }
+        }
+
+        // Create new condensed corners
+        Set<ChunkCorner> corners = new HashSet<ChunkCorner>();
+        for (Map.Entry<ChunkCorner, List<ChunkEdge>> entry : corner_edge_map.entrySet()) {
+            ChunkCorner cc = entry.getKey();
+            List<ChunkEdge> connections = entry.getValue();
+
+            // Find two edges meeting at an angle. A straight run of boundary has none,
+            // so it is not a corner. Corners touching diagonally have four edges.
+            ChunkEdge first = null;
+            ChunkEdge second = null;
+            for (int i = 0; i < connections.size() && first == null; i++) {
+                for (int j = i + 1; j < connections.size(); j++) {
+                    if (!connections.get(i).isAligned(connections.get(j))) {
+                        first = connections.get(i);
+                        second = connections.get(j);
+                        break;
+                    }
+                }
+            }
+
+            if (first == null) {
+                continue;
+            }
+
+            // Point the corner along both edges, away from itself. ChunkCorner is a record,
+            // so each overlay returns a new corner.
+            corners.add(cc.overlay_direction(first.awayFrom(cc)).overlay_direction(second.awayFrom(cc)));
+        }
+        return corners;
+    }
+ 
     private Set<ChunkKey> loadChunks(FileConfiguration config) {
         Set<ChunkKey> chunk_set = new HashSet<ChunkKey>();
         for (Map<?, ?> entry : config.getMapList("chunks")) {
@@ -122,6 +194,8 @@ public class Land {
         }
         config.set("chunks", chunk_list);
     }
+
+    private Set<ChunkCorner> corner_cache = null;
 
     private final UUID id;
     private final UUID owner;
