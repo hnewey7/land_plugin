@@ -377,7 +377,7 @@ public class LandListener implements Listener {
         String colour_code;
         if (land.isOwner(player)) {
             colour_code = "§6";
-        } else if (trusted_player_manager.isTrusted(land.getOwnerID(), player)) {
+        } else if (trusted_player_manager.isTrusted(land.getOwnerID(), player.getUniqueId())) {
             colour_code = "§b";
         } else {
             colour_code = "§c";

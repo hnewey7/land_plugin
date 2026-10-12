@@ -173,7 +173,7 @@ public class LandManager {
         if (l == null) {
             return true;
         }
-        return l.isOwner(player) || LandPlugin.getTrustedPlayerManager().isTrusted(l.getOwnerID(), player);
+        return l.isOwner(player) || LandPlugin.getTrustedPlayerManager().isTrusted(l.getOwnerID(), player.getUniqueId());
     }
 
     public boolean isOwner(Player player, Location loc) {
@@ -215,7 +215,7 @@ public class LandManager {
                     row.append("§8\\");
                 } else if (land.isOwner(player)) {
                     row.append("§6\\");
-                } else if (LandPlugin.getTrustedPlayerManager().isTrusted(land.getOwnerID(), player)) {
+                } else if (LandPlugin.getTrustedPlayerManager().isTrusted(land.getOwnerID(), player.getUniqueId())) {
                     row.append("§b\\");
                 } else {
                     row.append("§c\\");

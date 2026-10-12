@@ -10,8 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.StringUtil;
 
-import com.sk89q.worldedit.world.chunk.Chunk;
-
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -91,8 +89,6 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                         player.sendMessage(row);
                     }
 
-                    // Line to break up the bottom of the map
-                    player.sendMessage(MAP_DIVIDER);
                     return true;
                 }
                 case "add": {
@@ -112,12 +108,12 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                     } else if (other.getUniqueId() == player.getUniqueId()) {
                         player.sendMessage("§7You cannot add §cyourself§7 to your own land.");
                         return true;
-                    } else if (trusted_player_manager.isTrusted(player, other)) {
+                    } else if (trusted_player_manager.isTrusted(player.getUniqueId(), other.getUniqueId())) {
                         player.sendMessage("§7The player is §calready added§7 to your land.");
                         return true;
                     }
 
-                    trusted_player_manager.addTrusted(player, other);
+                    trusted_player_manager.addTrusted(player.getUniqueId(), other.getUniqueId());
                     player.sendMessage("§7The player has been §6added§7 to your land.");
 
                     return true;
@@ -139,12 +135,12 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                     } else if (other.getUniqueId() == player.getUniqueId()) {
                         player.sendMessage("§7You cannot remove §cyourself§7 from your own land.");
                         return true;
-                    } else if (!trusted_player_manager.isTrusted(player, other)) {
+                    } else if (!trusted_player_manager.isTrusted(player.getUniqueId(), other.getUniqueId())) {
                         player.sendMessage("§7The player is §calready removed§7 from your land.");
                         return true;
                     }
 
-                    trusted_player_manager.removeTrusted(player, other);
+                    trusted_player_manager.removeTrusted(player.getUniqueId(), other.getUniqueId());
                     player.sendMessage("§7The player has been §6removed§7 from your land.");
 
                     return true;
@@ -196,7 +192,7 @@ public class LandCommands implements CommandExecutor, TabCompleter {
                 case "list": {
                     // Get land of player
                     Set<Land> owned_land = land_manager.getLandByOwner(player);
-                    if (owned_land.isEmpty()) {
+                    if (owned_land == null || owned_land.isEmpty()) {
                         player.sendMessage("§7You do not own §cany land§7.");
                         return true;
                     }

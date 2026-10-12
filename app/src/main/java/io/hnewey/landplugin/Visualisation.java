@@ -215,7 +215,7 @@ public class Visualisation implements Listener {
             BlockData alliance_block;
             if (land.isOwner(player_id)) {
                 alliance_block = Material.GOLD_BLOCK.createBlockData();
-            } else if (trusted_manager.isTrusted(land.getOwnerID(), player)) {
+            } else if (trusted_manager.isTrusted(land.getOwnerID(), player.getUniqueId())) {
                 alliance_block = Material.DIAMOND_BLOCK.createBlockData();
             } else {
                 alliance_block = Material.REDSTONE_BLOCK.createBlockData();
